@@ -1,0 +1,6 @@
+LIBRARY	"histoday"
+
+EXPORTS
+	CreateHistodayDatabase
+	ImportData
+
