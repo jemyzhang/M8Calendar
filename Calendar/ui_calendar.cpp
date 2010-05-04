@@ -17,17 +17,156 @@ extern CalendarConfig AppConfig;
 #include <festio.h>
 extern FestivalIO *pfestival;
 
-MZ_IMPLEMENT_DYNAMIC(Ui_CalendarWnd)
+#define CAL_ROW_WIDTH	68
+#define CAL_ROW_HEIGHT	61
 
-#define MZ_IDC_TOOLBAR_CALENDAR 101
-#define MZ_IDC_Edit_YEAR 102
-#define MZ_IDC_Edit_MONTH 103
-#define MZ_IDC_Edit_DAY 104
-#define MZ_IDC_CALENDAR_GRID 105
-//#define MZ_IDC_CALENDAR_NEXT 106
-//#define MZ_IDC_CALENDAR_PRE 107
-#define MZ_IDC_YIJI_TIP 108
-#define MZ_IDC_FEST_INFO 109
+class UiWeekBar : public UiHeadingBar{
+public:
+	virtual void PaintWin(HDC hdcDst, RECT* prcWin, RECT* prcUpdate){
+		UiHeadingBar::PaintWin(hdcDst,prcWin,prcUpdate);
+		LPCTSTR sWeekName[] = {
+			L"日",L"一",L"二",L"三",L"四",L"五",L"六"
+		};
+		RECT tRect = {prcWin->left,prcWin->top,prcWin->left + CAL_ROW_WIDTH,prcWin->bottom};
+		for(int i = 0; i < sizeof(sWeekName)/sizeof(sWeekName[0]); i++){
+            MzDrawText( hdcDst,sWeekName[i], &tRect, DT_CENTER|DT_VCENTER );
+			tRect.left = tRect.right;
+			tRect.right += CAL_ROW_WIDTH;
+		}
+	}
+};
+
+class UiYiJiLabel : public UiWin
+{
+public:
+	UiYiJiLabel(){
+		_isTs = false;
+	}
+	~UiYiJiLabel(){
+	}
+	virtual void PaintWin(HDC hdcDst, RECT* prcWin, RECT* prcUpdate){
+		UiWin::PaintWin(hdcDst,prcWin,prcUpdate);
+		SetBkMode(hdcDst,TRANSPARENT);
+
+		MzDrawGridDlgBG(hdcDst,prcWin);
+
+		HFONT hf = FontHelper::GetFont( 30 );
+		SelectObject( hdcDst , hf );
+
+		RECT rect;
+		int height = prcWin->bottom - prcWin->top - 20;
+		int width = prcWin->right - prcWin->left;
+		rect.left = prcWin->left + 20;
+		rect.right = rect.left + 50;
+		//宜
+		rect.top = prcWin->top;
+		rect.bottom = rect.top + height / 2;
+		::SetTextColor( hdcDst,RGB(64,255,128));
+		MzDrawText( hdcDst, L"宜", &rect, DT_LEFT|DT_SINGLELINE|DT_VCENTER|DT_END_ELLIPSIS );
+		//忌
+		rect.top = prcWin->top + height / 2;
+		rect.bottom = prcWin->bottom - 10;
+		::SetTextColor( hdcDst, RGB(255,64,64));
+		MzDrawText( hdcDst, L"忌", &rect, DT_LEFT|DT_SINGLELINE|DT_VCENTER|DT_END_ELLIPSIS );
+		DeleteObject( hf );
+
+		hf = FontHelper::GetFont( 20 );
+		SelectObject( hdcDst , hf );
+
+		if(_isTs){
+			rect.top = prcWin->top;
+			rect.bottom = prcWin->bottom - 10;
+			rect.left = prcWin->left + 60;
+			rect.right = prcWin->right;
+			::SetTextColor( hdcDst, RGB(255,64,255));
+			MzDrawText( hdcDst, tsText.C_Str(), &rect, DT_LEFT|DT_SINGLELINE|DT_VCENTER|DT_END_ELLIPSIS );
+		}else{
+			::SetTextColor( hdcDst, RGB(255,255,255));
+
+			rect.top = prcWin->top;
+			rect.bottom = rect.top + height / 2;
+			rect.left = prcWin->left + 60;
+			rect.right = prcWin->right;
+			MzDrawText( hdcDst, yiText.C_Str(), &rect, DT_LEFT|DT_SINGLELINE|DT_VCENTER|DT_END_ELLIPSIS );
+
+			rect.top = prcWin->top + height / 2;
+			rect.bottom = prcWin->bottom - 10;
+			MzDrawText( hdcDst, jiText.C_Str(), &rect, DT_LEFT|DT_SINGLELINE|DT_VCENTER|DT_END_ELLIPSIS );
+		}
+		DeleteObject( hf );
+	}
+	void setText(wchar_t* yi, wchar_t* ji,bool ts = false){
+		_isTs = ts;
+		if(!ts){
+			yiText = yi;
+			jiText = ji;
+		}else{
+			tsText = yi;
+		}
+	}
+private:
+	CMzString yiText,jiText,tsText;
+	bool _isTs;	//特殊
+};
+
+class UiGrid : public UiWin
+{
+public:
+	UiGrid(void);
+	~UiGrid(void);
+	virtual void PaintWin(HDC hdcDst, RECT* prcWin, RECT* prcUpdate);
+public:
+	//if ret = false, no selection
+	bool calcSelectedIndex(int x, int y,int &row, int &col);
+	void setSelectedIndex(int row,int col);
+	//if ret = false, no selection
+	bool getSelectedIndex(int &row, int &col);
+public:
+	//if idx == -1, set all
+	void setTextSize(int row,int col, int nSize);
+	//if idx == -1 set all
+	void setTextColor(int row,int col, COLORREF c);
+	void setText1Color(int row,int col, COLORREF c);
+	void setText(int row,int col, LPCTSTR text);
+	void setText1(int row,int col, LPCTSTR text);
+	int getTextSize(int row,int col);
+	COLORREF getTextColor(int row,int col);
+	LPCTSTR getText(int row,int col);
+	void setSelectedBgColor(COLORREF c);
+	void setSelectedTextColor(COLORREF c);
+	void setGridAutoSize(bool);
+	void setGridSize(int width, int height);
+public:
+	void setGrids(int nRow,int nCol);
+	int getRowCount(void);
+	int getColCount(void);
+public:
+	virtual void SetPos(int x, int y, int w, int h, UINT flags=0);
+private:
+	typedef struct GridAttr{
+		CMzString text;	//正中
+		CMzString text1;	//下一行
+		CMzString text2;	//下二行
+		int textSize;
+		int text1Size;
+		COLORREF textColor;
+		COLORREF text1Color;
+		bool isSelected;
+	}GridAttr_t,*GridAttr_ptr;
+	GridAttr_ptr *_grids;
+private:
+	COLORREF _selbg, _seltxt;
+	int _rows,_cols;
+	bool _isAutosize;
+	int _gwidth, _gheight;
+	int m_nMaxX;
+	int m_nMaxY;
+private:
+	HDC pMemDC;             //定义内存DC指针
+	HBITMAP pBitmap;        //定义内存位图指针
+private:
+	bool checkRange(int row, int col);
+};
 
 UiGrid::UiGrid()
 	:UiWin()
@@ -38,12 +177,9 @@ UiGrid::UiGrid()
 	_rows = 1;
 	_cols = 1;
 	setGridSize(_rows,_cols);
-	_gwidth = 68;
-	_gheight = 68;
+	_gwidth = CAL_ROW_WIDTH;
+	_gheight = CAL_ROW_HEIGHT - 1;
 	_isAutosize = false;
-#if GRID_USE_UILIST
-	_colList = 0;
-#endif
 }
 
 UiGrid::~UiGrid(){
@@ -113,12 +249,6 @@ void UiGrid::setGrids(int nRow, int nCol){
 		delete _grids;
 		_grids = 0;
 	}
-#if GRID_USE_UILIST
-	if(_colList){
-		delete[] _colList;
-		_colList = 0;
-	}
-#endif
 	_rows = nRow;
 	_cols = nCol;
 	if(_rows >= 0 && _cols >= 0){
@@ -135,9 +265,6 @@ void UiGrid::setGrids(int nRow, int nCol){
 				_grids[i][j].text1Size = 17;
 			}
 		}
-	#if GRID_USE_UILIST
-		_colList = new UiButton[_cols*_rows];
-	#endif
 	}
 
 
@@ -214,11 +341,8 @@ void UiGrid::SetPos(int x, int y, int w, int h, UINT flags){
 	UiWin::SetPos(x,y,w,h,flags);
 	m_nMaxX = w;
 	m_nMaxY = h;
-#if GRID_USE_UILIST
-#else
 	pMemDC = CreateCompatibleDC(GetDC(GetParentWnd()));
 	pBitmap = CreateCompatibleBitmap(GetDC(GetParentWnd()),m_nMaxX,m_nMaxY);
-#endif
 }
 
 void UiGrid::PaintWin(HDC hdcDst, RECT* prcWin, RECT* prcUpdate){
@@ -286,7 +410,17 @@ void UiGrid::PaintWin(HDC hdcDst, RECT* prcWin, RECT* prcUpdate){
     SelectObject(pMemDC,poldpen);
 	BitBlt(hdcDst,prcWin->left,prcWin->top,m_nMaxX,m_nMaxY,pMemDC,0,0,SRCCOPY);
 }
+
 //////
+MZ_IMPLEMENT_DYNAMIC(Ui_CalendarWnd)
+
+#define MZ_IDC_TOOLBAR_CALENDAR 101
+#define MZ_IDC_Edit_YEAR 102
+#define MZ_IDC_Edit_MONTH 103
+#define MZ_IDC_Edit_DAY 104
+#define MZ_IDC_CALENDAR_GRID 105
+#define MZ_IDC_YIJI_TIP 108
+#define MZ_IDC_FEST_INFO 109
 
 Ui_CalendarWnd::Ui_CalendarWnd(void)
 {
@@ -297,6 +431,8 @@ Ui_CalendarWnd::Ui_CalendarWnd(void)
 Ui_CalendarWnd::~Ui_CalendarWnd(void)
 {
 	delete m_pFestDetail;
+	delete m_pTipyiji;
+	delete m_pCalendar;
 }
 CMzString Ui_CalendarWnd::getDate(){
 	CMzString sDate;
@@ -320,7 +456,7 @@ BOOL Ui_CalendarWnd::OnInitDialog() {
     SetWindowText(L"掌上农历");
     // Then init the controls & other things in the window
     int y = 0;
-	m_CaptionHeader.SetPos(0,y,GetWidth(),95 + MZM_HEIGHT_CAPTION/2);
+	m_CaptionHeader.SetPos(0,y,GetWidth(),100);
 	m_CaptionHeader.EnableNotifyMessage(true);
 	AddUiWin(&m_CaptionHeader);
 
@@ -345,18 +481,20 @@ BOOL Ui_CalendarWnd::OnInitDialog() {
 	m_CaptionHeader.AddChild(&m_GanZhiYMD);
 
 
-	m_WeekBar.SetPos(0,95,GetWidth(),MZM_HEIGHT_CAPTION/2);
-	m_WeekBar.SetText(L"星期日   星期一   星期二   星期三    星期四   星期五   星期六");
-	m_WeekBar.SetTextSize(17);
-	m_WeekBar.SetTextColor(RGB(128,128,128));
-	m_WeekBar.EnableNotifyMessage(true);
-	m_CaptionHeader.AddChild(&m_WeekBar);
+	y += 100;
+	m_pWeekBar = new UiWeekBar;
+	m_pWeekBar->SetPos(0,y,GetWidth(),MZM_HEIGHT_HEADINGBAR);
+	m_pWeekBar->SetTextSize(17);
+	m_pWeekBar->SetTextColor(RGB(128,128,128));
+	m_pWeekBar->EnableNotifyMessage(true);
+	AddUiWin(m_pWeekBar);
 
-	y+= 95 + MZM_HEIGHT_CAPTION / 2;
-    m_Calendar.SetPos(1, y, GetWidth()-2, 69*6);
-	m_Calendar.SetID(MZ_IDC_CALENDAR_GRID);
-	m_Calendar.EnableNotifyMessage(true);
-    AddUiWin(&m_Calendar);
+	y += MZM_HEIGHT_HEADINGBAR;
+	m_pCalendar = new UiGrid;
+    m_pCalendar->SetPos(1, y, GetWidth()-2, CAL_ROW_HEIGHT*6);
+	m_pCalendar->SetID(MZ_IDC_CALENDAR_GRID);
+	m_pCalendar->EnableNotifyMessage(true);
+    AddUiWin(m_pCalendar);
 
     m_Toolbar.SetPos(0, GetHeight() - MZM_HEIGHT_TOOLBARPRO, GetWidth(), MZM_HEIGHT_TOOLBARPRO);
     m_Toolbar.SetButton(TOOLBARPRO_LEFT_TEXTBUTTON, true, true, L"今日");
@@ -365,11 +503,6 @@ BOOL Ui_CalendarWnd::OnInitDialog() {
     m_Toolbar.SetID(MZ_IDC_TOOLBAR_CALENDAR);
     AddUiWin(&m_Toolbar);
 
-	m_Tipyiji.SetID(MZ_IDC_YIJI_TIP);
-	m_Tipyiji.EnableNotifyMessage(true);
-	m_Tipyiji.SetVisible(false);
-	AddUiWin(&m_Tipyiji);
-
 	m_pFestDetail = new UiEdit;
 	m_pFestDetail->SetEditBgType(UI_EDIT_BGTYPE_FILL_WHITE_AND_TOPSHADOW);
 	m_pFestDetail->SetReadOnly(true);
@@ -377,6 +510,12 @@ BOOL Ui_CalendarWnd::OnInitDialog() {
 	m_pFestDetail->EnableZoomIn(false);
 	m_pFestDetail->SetID(MZ_IDC_FEST_INFO);
 	AddUiWin(m_pFestDetail);
+
+	m_pTipyiji = new UiYiJiLabel;
+	m_pTipyiji->SetID(MZ_IDC_YIJI_TIP);
+	m_pTipyiji->EnableNotifyMessage(true);
+	m_pTipyiji->SetVisible(false);
+	AddUiWin(m_pTipyiji);
 
 	DateTime::getDate(&_year,&_month,&_day);
 	updateGrid();
@@ -431,7 +570,7 @@ void Ui_CalendarWnd::updateGrid(){
 	int week = (DateTime::getWeekDay(_year,_month,1)+1)%7;	//获取1号的星期
 	int days = DateTime::getDays(_year,_month);
 	int rows = (week+days)/7 + ((week+days)%7 ? 1 : 0);
-	m_Calendar.setGrids(rows,7);
+	m_pCalendar->setGrids(rows,7);
 	int t_year,t_month,t_day;
 	DateTime::getDate(&t_year,&t_month,&t_day);
 	wchar_t datestr[8];
@@ -445,22 +584,22 @@ void Ui_CalendarWnd::updateGrid(){
 		int r = (week + i) / 7;
 		int c = (week + i) % 7;
 		wsprintf(datestr,L"%d",i+1);
-		m_Calendar.setText(r,c,datestr);
+		m_pCalendar->setText(r,c,datestr);
 		_lstm.setDay(i + 1);
-		m_Calendar.setText1(r,c,_lstm.LunarDay().C_Str());
+		m_pCalendar->setText1(r,c,_lstm.LunarDay().C_Str());
 		if(t_year == _year && t_month == _month && t_day == i+1){
 			//设置今天颜色
-			m_Calendar.setTextColor(r,c,RGB(192,64,64));
+			m_pCalendar->setTextColor(r,c,RGB(192,64,64));
 		}
 		if(_day == i+1){
-			m_Calendar.setSelectedIndex(r,c);
+			m_pCalendar->setSelectedIndex(r,c);
 			sel_row = r;
 			sel_col = c;
 		}
 		for(int j = 0; j < 2; j++){
 			if(i == (p24term[j].day - 1)){
-				m_Calendar.setText1(r,c,p24term[j].name);
-				m_Calendar.setText1Color(r,c,RGB(200,64,128));
+				m_pCalendar->setText1(r,c,p24term[j].name);
+				m_pCalendar->setText1Color(r,c,RGB(200,64,128));
 				break;
 			}
 		}
@@ -477,8 +616,8 @@ void Ui_CalendarWnd::updateGrid(){
 			b = _lstm.LunarHoliday(holidayname);
 		}
 		if(b){
-			m_Calendar.setText1(r,c,holidayname);
-			m_Calendar.setText1Color(r,c,RGB(64,64,255));
+			m_pCalendar->setText1(r,c,holidayname);
+			m_pCalendar->setText1Color(r,c,RGB(64,64,255));
 		}
 
 		memset(holidayname,0,sizeof(holidayname));
@@ -492,11 +631,11 @@ void Ui_CalendarWnd::updateGrid(){
 			b = _lstm.SolarHoliday(holidayname);
 		}
 		if(b){
-			m_Calendar.setText1(r,c,holidayname);
-			m_Calendar.setText1Color(r,c,RGB(255,0,0));
+			m_pCalendar->setText1(r,c,holidayname);
+			m_pCalendar->setText1Color(r,c,RGB(255,0,0));
 		}
 	}
-	m_Calendar.Invalidate();
+	m_pCalendar->Invalidate();
 
 	updateFestDetail();
 }
@@ -650,40 +789,40 @@ void Ui_CalendarWnd::OnMzCommand(WPARAM wParam, LPARAM lParam) {
 void Ui_CalendarWnd::showTip(bool bshow){
 	//
 	if(bshow){
-		m_Tipyiji.SetVisible(true);
+		m_pTipyiji->SetVisible(true);
 	}
 
-	if(m_Tipyiji.IsVisible()){
-		RECT r = m_Tipyiji.GetRect();
+	if(m_pTipyiji->IsVisible()){
+		RECT r = m_pTipyiji->GetRect();
 
 		LCAL _lstm(_year,_month,_day);
 		_lstm.SolarToLunar();
 		CMzString yi,ji;
 		bool ret = _lstm.HuangliYiJi(yi,ji);
-		m_Tipyiji.setText(yi.C_Str(),ji.C_Str(),ret);
+		m_pTipyiji->setText(yi.C_Str(),ji.C_Str(),ret);
 		int row,col;
-		m_Calendar.getSelectedIndex(row,col);
+		m_pCalendar->getSelectedIndex(row,col);
 		RECT rcWork;
-		rcWork.left = 69 * col + 2;
+		rcWork.left = CAL_ROW_HEIGHT * col + 2;
 		if(col > 2){
 			rcWork.left = 480 - 320 - 10;
 		}
-		rcWork.top = m_Calendar.GetTopPos() + 69 * (row + 1) + 28;
+		rcWork.top = m_pCalendar->GetTopPos() + CAL_ROW_HEIGHT * (row + 1);
 		if(row > 4){
-			rcWork.left += 69;
-			rcWork.top -= 69;
+			rcWork.left += CAL_ROW_HEIGHT;
+			rcWork.top -= CAL_ROW_HEIGHT;
 		}
 
 		rcWork.right = rcWork.left + 320;
 		rcWork.bottom = rcWork.top + 120;
-		m_Tipyiji.SetPos(rcWork.left, rcWork.bottom, RECT_WIDTH(rcWork), RECT_HEIGHT(rcWork));
+		m_pTipyiji->SetPos(rcWork.left, rcWork.bottom, RECT_WIDTH(rcWork), RECT_HEIGHT(rcWork));
 
-		RECT r2 = m_Tipyiji.GetRect();
+		RECT r2 = m_pTipyiji->GetRect();
 
 		if(r.left != r2.left || r.top != r2.top){
 			Invalidate(&r);
 		}
-		m_Tipyiji.Invalidate();
+		m_pTipyiji->Invalidate();
 	}
 }
 
@@ -714,10 +853,10 @@ LRESULT Ui_CalendarWnd::MzDefWndProc(UINT message, WPARAM wParam, LPARAM lParam)
             short x = LOWORD(lParam);
             short y = HIWORD(lParam);
 			if(nID == MZ_IDC_YIJI_TIP && nNotify == MZ_MN_LBUTTONUP){
-				if (!m_Tipyiji.IsMouseDownAtScrolling() && !m_Tipyiji.IsMouseMoved()) {
-					if(m_Tipyiji.IsVisible()){
-						m_Tipyiji.SetVisible(false);
-						m_Tipyiji.Invalidate();
+				if (!m_pTipyiji->IsMouseDownAtScrolling() && !m_pTipyiji->IsMouseMoved()) {
+					if(m_pTipyiji->IsVisible()){
+						m_pTipyiji->SetVisible(false);
+						m_pTipyiji->Invalidate();
 					}
 				}
 				return 0;
@@ -758,16 +897,16 @@ LRESULT Ui_CalendarWnd::MzDefWndProc(UINT message, WPARAM wParam, LPARAM lParam)
 					return 0;
 				}
 
-                if (!m_Calendar.IsMouseDownAtScrolling() && !m_Calendar.IsMouseMoved()) {
+                if (!m_pCalendar->IsMouseDownAtScrolling() && !m_pCalendar->IsMouseMoved()) {
 					int r = 0;
 					int c = 0;
 					bool force = false;
-					if(m_Calendar.calcSelectedIndex(x,y,r,c)){
+					if(m_pCalendar->calcSelectedIndex(x,y,r,c)){
 						if(sel_row == r && sel_col == c){
 							force = true;
 						}
 						//check if is invalid selection
-						CMzString s = m_Calendar.getText(r,c);
+						CMzString s = m_pCalendar->getText(r,c);
 						_day = _wtoi(s.C_Str());
 						if(s.Length() == 0){
 							return 0;
@@ -781,12 +920,12 @@ LRESULT Ui_CalendarWnd::MzDefWndProc(UINT message, WPARAM wParam, LPARAM lParam)
             }
 #if 0
             if (nID == MZ_IDC_CALENDAR_GRID && nNotify == MZ_MN_LBUTTONDBLCLK) {
-                if (!m_Calendar.IsMouseDownAtScrolling() && !m_Calendar.IsMouseMoved()) {
+                if (!m_pCalendar->IsMouseDownAtScrolling() && !m_pCalendar->IsMouseMoved()) {
 					int r = 0;
 					int c = 0;
-					if( m_Calendar.calcSelectedIndex(x,y,r,c)){
+					if( m_pCalendar->calcSelectedIndex(x,y,r,c)){
 						//check if is invalid selection
-						CMzString s = m_Calendar.getText(r,c);
+						CMzString s = m_pCalendar->getText(r,c);
 						if(s.Length() == 0){
 							return 0;
 						}
@@ -857,8 +996,8 @@ void Ui_CalendarWnd::updateFestDetail(){
 	LCAL _lstm(_year,_month,_day);
 	_lstm.SolarToLunar();
 	
-	int calendarBottom = m_Calendar.GetPosY() + 
-		m_Calendar.getRowCount() * 69;
+	int calendarBottom = m_pCalendar->GetPosY() + 
+		m_pCalendar->getRowCount() * CAL_ROW_HEIGHT;
 	m_pFestDetail->SetPos(0,calendarBottom,GetWidth(),GetHeight() - calendarBottom - MZM_HEIGHT_TOOLBARPRO);
 
 	wstring sfestinfo;
