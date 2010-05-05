@@ -1095,8 +1095,8 @@ int UiWidget_Calendar::OnTimer(UINT_PTR nIDEvent){
             updateUi();
         }
 	}else if(id + 0x1000 == nIDEvent){
-		::KillTimer(GetParentWnd(),id);
-		::SetTimer(GetParentWnd(),id,1000*10,NULL);
+		::KillTimer(GetParentWnd(),id + 0x1000);
+		::SetTimer(GetParentWnd(),id + 0x1000,1000*10,NULL);
 		if(CheckExternRequest() == REQ_RELOADFEST) {
 			ClearExternReqeust();
 			if(pfestival){

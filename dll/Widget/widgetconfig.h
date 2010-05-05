@@ -63,7 +63,8 @@ extern HMODULE GetThisModule();
 
 class WidgetConfig : public AppConfigIni{
 public:
-	WidgetConfig(){
+	WidgetConfig()
+        : AppConfigIni() {
         wchar_t currpath[MAX_PATH];
         wchar_t ini_path[MAX_PATH];
         if(File::GetCurrentPath(currpath,GetThisModule())){
@@ -72,6 +73,7 @@ public:
             wsprintf(ini_path,L"widgetcalendar.ini");
         }
         SetupIniFullPath(ini_path);
+        CreateIni();
         InitIniKey();
 	}
 protected:

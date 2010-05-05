@@ -71,13 +71,15 @@ class COMMON_API AppConfigIni
 {
 public:
 	AppConfigIni(LPTSTR iniFile = NULL,bool fullpath = false){
-        if(fullpath){
-            SetupIniFullPath(iniFile);
-        }else{
-		    SetupIniPath(iniFile);
+        if(iniFile){
+            if(fullpath){
+                SetupIniFullPath(iniFile);
+            }else{
+                SetupIniPath(iniFile);
+            }
+            CreateIni();
+            InitIniKey();
         }
-		CreateIni();
-		InitIniKey();
 	}
 protected:
 	void SetupIniPath(LPTSTR iniFile = NULL);
