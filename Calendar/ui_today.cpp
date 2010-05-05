@@ -90,7 +90,7 @@ BOOL Ui_TodayWnd::OnInitDialog() {
     y += 50;
 	m_WeekDayEN.SetPos(0,y,width,50);
     m_WeekDayEN.SetDrawTextFormat(DT_CENTER|DT_VCENTER);
-	m_WeekDayEN.SetTextSize(36);
+	m_WeekDayEN.SetTextSize(32);
     m_WeekDayEN.SetTextWeight(FW_BOLD);
 	AddUiWin(&m_WeekDayEN);
 

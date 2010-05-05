@@ -4,6 +4,8 @@ using namespace cMzCommon;
 #include <fstream>
 using namespace std;
 
+extern bool CreateDefaultFestivalTxt(LPCTSTR path);
+
 FestivalIO::FestivalIO(LPCTSTR szpath){
     pfestpath = 0;
     if(szpath){
@@ -384,7 +386,9 @@ void FestivalIO::parseline(LPCTSTR linetext){
 bool FestivalIO::parsefile(TCHAR* filename){
 
     if(!File::FileExists(filename)){
-        return false;
+        if(!CreateDefaultFestivalTxt(filename)){
+            return false;
+        }
     }
 
     TEXTENCODE_t enc = File::getTextCode(filename);

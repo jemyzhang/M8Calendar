@@ -95,86 +95,44 @@ private:
     ImagingHelper *pbkgrndimg;
 	FestivalIO *pfestival;
 private:
-	bool SetVersionRegKey(DWORD version){
+    HKEY OpenExternRequestKey(){
         HKEY hKEY;
         HKEY hKeyRoot = HKEY_LOCAL_MACHINE;
 
         long ret = ::RegOpenKeyEx(hKeyRoot,
-            L"SOFTWARE\\Meizu\\MiniOneShell\\Main\\WidgetLunarCalendar",0,
+            L"SOFTWARE\\iDapRc\\M8Calendar",0,
             KEY_READ,&hKEY);
         if(ret != ERROR_SUCCESS)//如果无法打开hKEY,则中止程序的执行
         {
-            RegCloseKey(hKEY);
-            return false;
+            hKEY = NULL;
         }
-        DWORD RegType;
-        DWORD RegData;
-        DWORD RegDataLen = 4;
-        //写入版本信息
-        if(::RegQueryValueEx(hKEY,
-            L"Version",NULL,&RegType,(LPBYTE)&RegData,&RegDataLen) != ERROR_SUCCESS){
-                //不存在则新建
-                DWORD ver = version;
-                RegSetValueEx(hKEY,
-                    L"Version",NULL,REG_DWORD,(LPBYTE)&ver,4);
-                RegCloseKey(hKEY);
-                return 0;
-        }
-        if(RegType != REG_DWORD){ //数据类型错误
-            RegCloseKey(hKEY);
-            return false;
-        }
-        RegCloseKey(hKEY);
-        return true;
-	}
+        return hKEY;
+    }
     bool externForceRefresh;    //外部强制刷新
     int CheckExternRequest(){
-        HKEY hKEY;
-        HKEY hKeyRoot = HKEY_LOCAL_MACHINE;
-
-        long ret = ::RegOpenKeyEx(hKeyRoot,
-            L"SOFTWARE\\Meizu\\MiniOneShell\\Main\\WidgetLunarCalendar",0,
-            KEY_READ,&hKEY);
-        if(ret != ERROR_SUCCESS)//如果无法打开hKEY,则中止程序的执行
-        {
-            RegCloseKey(hKEY);
-            return 0;
-        }
-        DWORD RegType;
-        DWORD RegData;
-        DWORD RegDataLen = 4;
-        //2: 获取桌面插件运行请求
-        if(::RegQueryValueEx(hKEY,
-            L"FestRefreshReq",NULL,&RegType,(LPBYTE)&RegData,&RegDataLen) != ERROR_SUCCESS){
-                //不存在则新建
-                DWORD req = 0;
-                RegSetValueEx(hKEY,
-                    L"FestRefreshReq",NULL,REG_DWORD,(LPBYTE)&req,4);
-                RegCloseKey(hKEY);
-                return 0;
-        }
-        if(RegType != REG_DWORD){ //数据类型错误
-            RegCloseKey(hKEY);
-            return 0;
+        HKEY hKEY = OpenExternRequestKey();
+        DWORD RegData = 0;
+        if(hKEY){
+            DWORD RegType;
+            DWORD RegDataLen = 4;
+            //2: 获取桌面插件运行请求
+            if(::RegQueryValueEx(hKEY,
+                L"FestRefreshReq",NULL,&RegType,(LPBYTE)&RegData,&RegDataLen) == ERROR_SUCCESS){
+                if(RegType != REG_DWORD){ //数据类型错误
+                    RegData = 0;
+                }
+            }
         }
         RegCloseKey(hKEY);
         return RegData;
     }
     void ClearExternReqeust(){
-        HKEY hKEY;
-        HKEY hKeyRoot = HKEY_LOCAL_MACHINE;
-
-        long ret = ::RegOpenKeyEx(hKeyRoot,
-            L"SOFTWARE\\Meizu\\MiniOneShell\\Main\\WidgetLunarCalendar",0,
-            KEY_READ,&hKEY);
-        if(ret != ERROR_SUCCESS)//如果无法打开hKEY,则中止程序的执行
-        {
+        HKEY hKEY = OpenExternRequestKey();
+        if(hKEY){
+            DWORD req = 0;
+            RegSetValueEx(hKEY,
+                L"FestRefreshReq",NULL,REG_DWORD,(LPBYTE)&req,4);
             RegCloseKey(hKEY);
-            return;
         }
-        DWORD req = 0;
-        RegSetValueEx(hKEY,
-            L"FestRefreshReq",NULL,REG_DWORD,(LPBYTE)&req,4);
-        RegCloseKey(hKEY);
     }
 };

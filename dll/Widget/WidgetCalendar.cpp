@@ -637,6 +637,7 @@ bool UiWidget_Calendar::StartWidget()
     //this->EnableNotifyMessage(true);
     this->EnableGrabMouseEventOfChildren(true);
     this->EnablePressedHoldSupport(true);
+    this->SetPressedHoldTime(2000);
 
     SetupItems();
     ///----------------------
@@ -656,8 +657,6 @@ bool UiWidget_Calendar::StartWidget()
             pfestival = 0;
         }
     }
-
-	SetVersionRegKey(1000);
 
     return TRUE;
 }
@@ -714,7 +713,6 @@ void UiWidget_Calendar::InitItems(){
 }
 
 void UiWidget_Calendar::SetupItems(){
-    printf("%s\n",__FUNCTION__);
     if(m_pBigDay == 0){
         m_pBigDay = new UiScrollDay(this,&pconfig->Day);
     }
@@ -1062,15 +1060,15 @@ int UiWidget_Calendar::OnLButtonDblClk(UINT fwKeys, int xPos, int yPos){
 
 void UiWidget_Calendar::OnPressedHoldTimeup(){
     UiWidget::OnPressedHoldTimeup();
-    //PROCESS_INFORMATION pi;
-    //wchar_t exepath[MAX_PATH];
-    //if(File::GetCurrentPath(exepath,GetThisModule())){
-    //    wcscat(exepath,L"FestivalEditor.exe");
-    //}else{
-    //    wsprintf(exepath,L"FestivalEditor.exe");
-    //}
-    //::CreateProcess(exepath, 
-    //	NULL , NULL, NULL, FALSE, 0, NULL, NULL, NULL, &pi);
+    PROCESS_INFORMATION pi;
+    wchar_t exepath[MAX_PATH];
+    if(File::GetCurrentPath(exepath,GetThisModule())){
+        wcscat(exepath,L"FestivalEditor.exe");
+    }else{
+        wsprintf(exepath,L"FestivalEditor.exe");
+    }
+    ::CreateProcess(exepath, 
+    	NULL , NULL, NULL, FALSE, 0, NULL, NULL, NULL, &pi);
 }
 
 void UiWidget_Calendar::OnCalcItemSize( __out int &xSize, __out int &ySize )

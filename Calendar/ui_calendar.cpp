@@ -17,6 +17,22 @@ extern CalendarConfig AppConfig;
 #include <festio.h>
 extern FestivalIO *pfestival;
 
+class UiFestivalInfo : public UiEdit {
+public:
+    virtual int OnLButtonDblClk(UINT fwKeys, int xPos, int yPos){
+        PROCESS_INFORMATION pi;
+        wchar_t exepath[MAX_PATH];
+        if(File::GetCurrentPath(exepath)){
+            wcscat(exepath,L"FestivalEditor.exe");
+        }else{
+            wsprintf(exepath,L"FestivalEditor.exe");
+        }
+        ::CreateProcess(exepath, 
+    	    NULL , NULL, NULL, FALSE, 0, NULL, NULL, NULL, &pi);
+        return 0;
+    }
+};
+
 #define CAL_ROW_WIDTH	68
 #define CAL_ROW_HEIGHT	61
 
@@ -503,7 +519,7 @@ BOOL Ui_CalendarWnd::OnInitDialog() {
     m_Toolbar.SetID(MZ_IDC_TOOLBAR_CALENDAR);
     AddUiWin(&m_Toolbar);
 
-	m_pFestDetail = new UiEdit;
+	m_pFestDetail = new UiFestivalInfo;
 	m_pFestDetail->SetEditBgType(UI_EDIT_BGTYPE_FILL_WHITE_AND_TOPSHADOW);
 	m_pFestDetail->SetReadOnly(true);
 	m_pFestDetail->SetTextSize(20);
@@ -562,10 +578,55 @@ void Ui_CalendarWnd::OnTimer(UINT_PTR nIDEvent){
 				if(nRet == ID_OK){
 					AppConfig.IniFirstRun.Set((DWORD)0);
 				}
+                InstallWidget();
 			}
 			break;
 	}
 }
+
+#include "WidgetManager.h"
+
+void Ui_CalendarWnd::InstallWidget(){
+    UINT status = 1;
+    if(WidgetManager::IsInstalled()){
+        UINT ver = WidgetManager::VersionNumber();
+        if(ver == 0){
+            status = 1;
+        }else if(ver < 1000){
+            status = 2;
+        }else{
+            status = 0;
+        }
+    }
+    if(status == 1){
+        if(::MzMessageBoxV2(m_hWnd,L"是否安装农历插件?",MZV2_MB_YESNO,true) == 1){
+            if(WidgetManager::Install()){
+                ::MzMessageBoxV2(m_hWnd,
+                    L"安装成功，请到桌面应用农历插件",MZV2_MB_OK,true);
+            }else{
+                ::MzMessageBoxV2(m_hWnd,
+                    L"无法安装农历插件。",MZV2_MB_OK,true);
+            }
+        }else{
+            ::MzMessageBoxV2(m_hWnd,
+                L"您也可以到设置中手动安装农历插件",MZV2_MB_OK,true);
+        }
+    }else if(status == 2){
+        if(::MzMessageBoxV2(m_hWnd,L"是否更新农历插件?",MZV2_MB_YESNO,true) == 1){
+            if(WidgetManager::Uninstall() && WidgetManager::Install()){
+                ::MzMessageBoxV2(m_hWnd,
+                    L"更新成功，请到桌面应用农历插件",MZV2_MB_OK,true);
+            }else{
+                ::MzMessageBoxV2(m_hWnd,
+                    L"无法更新农历插件。",MZV2_MB_OK,true);
+            }
+        }else{
+            ::MzMessageBoxV2(m_hWnd,
+                L"您也可以到设置中手动更新农历插件",MZV2_MB_OK,true);
+        }
+    }
+}
+
 void Ui_CalendarWnd::updateGrid(){
 	int week = (DateTime::getWeekDay(_year,_month,1)+1)%7;	//获取1号的星期
 	int days = DateTime::getDays(_year,_month);
@@ -897,7 +958,9 @@ LRESULT Ui_CalendarWnd::MzDefWndProc(UINT message, WPARAM wParam, LPARAM lParam)
 					return 0;
 				}
 
-                if (!m_pCalendar->IsMouseDownAtScrolling() && !m_pCalendar->IsMouseMoved()) {
+                if (nID == MZ_IDC_CALENDAR_GRID && 
+                    !m_pCalendar->IsMouseDownAtScrolling() && 
+                    !m_pCalendar->IsMouseMoved()) {
 					int r = 0;
 					int c = 0;
 					bool force = false;

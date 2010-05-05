@@ -15,17 +15,25 @@ public:
 };
 
 // 从 CMzWndEx 派生的主窗口类
-class CSampleMainWnd : public CMzWndEx
+class FestivalEditorWnd : public CMzWndEx
 {
-    MZ_DECLARE_DYNAMIC(CSampleMainWnd);
+    MZ_DECLARE_DYNAMIC(FestivalEditorWnd);
 public:
-    UiFestivalList m_list;
-    UiButtonBar m_ButtonBar0;
-    UiButtonBar m_ButtonBar1;
-    UiToolBarPro m_toolBar;
+    ~FestivalEditorWnd(){
+        delete m_plist;
+        delete m_pButtonBar0;
+        delete m_pButtonBar1;
+        delete m_ptoolBar;
+    }
+public:
+    UiFestivalList *m_plist;
+    UiButtonBar *m_pButtonBar0;
+    UiButtonBar *m_pButtonBar1;
+    UiToolBarPro *m_ptoolBar;
 private:
     FestivalItemCollection *pItemColl;
     bool delmode;
+    bool bChanged;  //编辑/新增/删除后true
 	UINT UsbNotifyMsg;
 private:
     enum tagDPStatus{
@@ -45,7 +53,7 @@ private:
         HKEY hKeyRoot = HKEY_LOCAL_MACHINE;
         //1: 检测桌面插件是否已经启用
         long ret = ::RegOpenKeyEx(hKeyRoot,
-            L"SOFTWARE\\Meizu\\MiniOneShell\\Main\\WidgetLunarCalendar",0,
+            L"SOFTWARE\\iDapRc\\M8Calendar",0,
             KEY_READ,&hKEY);
         if(ret != ERROR_SUCCESS)//如果无法打开hKEY,则中止程序的执行
         {
@@ -65,7 +73,16 @@ private:
             RegCloseKey(hKEY);
             return DP_ERR_OTHER;
         }
+        RegCloseKey(hKEY);
 
+        ret = ::RegOpenKeyEx(hKeyRoot,
+            L"SOFTWARE\\Meizu\\MiniOneShell\\Main\\WidgetLunarCalendar",0,
+            KEY_READ,&hKEY);
+        if(ret != ERROR_SUCCESS)//如果无法打开hKEY,则中止程序的执行
+        {
+            RegCloseKey(hKEY);
+            return DP_NOT_INSTALL;
+        }
         if(::RegQueryValueEx(hKEY,
             L"IsHide",NULL,&RegType,(LPBYTE)&RegData,&RegDataLen) != ERROR_SUCCESS){
                 RegCloseKey(hKEY);
@@ -88,7 +105,7 @@ private:
         HKEY hKEY;
         HKEY hKeyRoot = HKEY_LOCAL_MACHINE;
         long ret = ::RegOpenKeyEx(hKeyRoot,
-            L"SOFTWARE\\Meizu\\MiniOneShell\\Main\\WidgetLunarCalendar",0,
+            L"SOFTWARE\\iDapRc\\M8Calendar",0,
             KEY_READ,&hKEY);
         if(ret != ERROR_SUCCESS)//如果无法打开hKEY,则中止程序的执行
         {
@@ -116,16 +133,16 @@ private:
         };
         if(index >= sizeof(btnbar)/sizeof(btnbar[0])) index = 0;
         if(selected >= btnbar[index].size) selected = 0;
-        m_ButtonBar1.SetButtonCount(btnbar[index].size);
-        m_ButtonBar1.SetHighLightButton(selected);
+        m_pButtonBar1->SetButtonCount(btnbar[index].size);
+        m_pButtonBar1->SetHighLightButton(selected);
         for(int i = 0; i < btnbar[index].size; i++){
-            m_ButtonBar1.SetButton(i,true,true,btnbar[index].texts[i]);
+            m_pButtonBar1->SetButton(i,true,true,btnbar[index].texts[i]);
         }
         pItemColl->SetFestivalCollectionType(
             (FestivalListType)(((index<<4)&0xf0) | selected )
             );
-        m_list.ScrollTo(UI_SCROLLTO_TOP,0,false);
-//        m_list.Invalidate();
+        m_plist->ScrollTo(UI_SCROLLTO_TOP,0,false);
+//        m_plist->Invalidate();
     }
 
     void DP_InitCheck(){
@@ -151,52 +168,74 @@ protected:
         }
         int y = 0;
         // 初始化 UiButtonBar 控件
-        m_ButtonBar0.SetID(MZ_IDC_BUTTONBAR_MAIN);
-        m_ButtonBar0.SetPos(0, y, GetWidth(), MZM_HEIGHT_BUTTONBAR);
-        m_ButtonBar0.SetButton(0, true, true, L"生日");
-        m_ButtonBar0.SetButton(1, true, true, L"节假日");
-        m_ButtonBar0.SetButton(2, true, true, L"提醒");
-        AddUiWin(&m_ButtonBar0);
+        m_pButtonBar0 = new UiButtonBar;
+        m_pButtonBar0->SetID(MZ_IDC_BUTTONBAR_MAIN);
+        m_pButtonBar0->SetPos(0, y, GetWidth(), MZM_HEIGHT_BUTTONBAR);
+        m_pButtonBar0->SetButton(0, true, true, L"生日");
+        m_pButtonBar0->SetButton(1, true, true, L"节假日");
+        m_pButtonBar0->SetButton(2, true, true, L"提醒");
+        AddUiWin(m_pButtonBar0);
 
         y += MZM_HEIGHT_BUTTONBAR;
-        m_ButtonBar1.SetID(MZ_IDC_BUTTONBAR_SUB);
-        m_ButtonBar1.SetPos(0, y, GetWidth(), MZM_HEIGHT_BUTTONBAR);
-        AddUiWin(&m_ButtonBar1);
+        m_pButtonBar1 = new UiButtonBar;
+        m_pButtonBar1->SetID(MZ_IDC_BUTTONBAR_SUB);
+        m_pButtonBar1->SetPos(0, y, GetWidth(), MZM_HEIGHT_BUTTONBAR);
+        AddUiWin(m_pButtonBar1);
 
         y += MZM_HEIGHT_BUTTONBAR;
+        m_plist = new UiFestivalList;
         // 初始化 UiCustomList 控件
-        m_list.SetPos(0, y, 480, GetHeight() - y - MZM_HEIGHT_TOOLBARPRO);
-        m_list.SetID(MZ_IDC_FESTLIST);
-        //m_list.EnableGridlines(true);
-        m_list.EnableDragModeH(true);
-        m_list.SetItemAttribute(UILISTEX_ITEMTYPE_PHONE);
-        m_list.UpdateItemAttribute_Del();
-        m_list.SetSplitLineMode(UILISTEX_SPLITLINE_LEFT);
-        //m_list.EnablePressedHoldSupport(true);
-        m_list.EnableScrollBarV(true);
-        //m_list.EnableUltraGridlines(false);
-        //m_list.SetSelectMode(UILISTEX_SELECT_DELETE_PRESSED);
-        AddUiWin(&m_list);
+        m_plist->SetPos(0, y, 480, GetHeight() - y - MZM_HEIGHT_TOOLBARPRO);
+        m_plist->SetID(MZ_IDC_FESTLIST);
+        //m_plist->EnableGridlines(true);
+        m_plist->EnableDragModeH(true);
+        m_plist->SetItemAttribute(UILISTEX_ITEMTYPE_PHONE);
+        m_plist->UpdateItemAttribute_Del();
+        m_plist->SetSplitLineMode(UILISTEX_SPLITLINE_LEFT);
+        //m_plist->EnablePressedHoldSupport(true);
+        m_plist->EnableScrollBarV(true);
+        //m_plist->EnableUltraGridlines(false);
+        //m_plist->SetSelectMode(UILISTEX_SELECT_DELETE_PRESSED);
+        AddUiWin(m_plist);
 
         // 初始化 UiToolBarPro 控件
-        m_toolBar.SetID(MZ_IDC_TOOLBAR);
-        m_toolBar.SetPos(0, GetHeight() - MZM_HEIGHT_TOOLBARPRO, GetWidth(), MZM_HEIGHT_TOOLBARPRO);
-        m_toolBar.SetButton(TOOLBARPRO_LEFT_TEXTBUTTON, true, true, L"选择");
-        m_toolBar.SetMiddleButton(true, true, L"新建",NULL,NULL,NULL);
-        m_toolBar.SetButton(TOOLBARPRO_RIGHT_TEXTBUTTON, true, true, L"保存");
-        AddUiWin(&m_toolBar);
+        m_ptoolBar = new UiToolBarPro;
+        m_ptoolBar->SetID(MZ_IDC_TOOLBAR);
+        m_ptoolBar->SetPos(0, GetHeight() - MZM_HEIGHT_TOOLBARPRO, GetWidth(), MZM_HEIGHT_TOOLBARPRO);
+        m_ptoolBar->SetButton(TOOLBARPRO_LEFT_TEXTBUTTON, true, true, L"选择");
+        m_ptoolBar->SetMiddleButton(true, true, L"新建",NULL,NULL,NULL);
+        m_ptoolBar->SetButton(TOOLBARPRO_RIGHT_TEXTBUTTON, true, true, L"退出");
+        AddUiWin(m_ptoolBar);
 
         pItemColl = new FestivalItemCollection;
-        m_list.SetCustomItemCollection(pItemColl);
+        m_plist->SetCustomItemCollection(pItemColl);
 
         UpdateSubButtonBar(0,0);
 
         DP_InitCheck();
         delmode = false;
+        bChanged = false;
 		//获取USB消息
 		UsbNotifyMsg = RegisterUsbNotifyMsg();
 
 		return TRUE;
+    }
+
+    void UpdateToolbar(){
+        if(!delmode){
+            m_ptoolBar->SetButton(TOOLBARPRO_LEFT_TEXTBUTTON,true,true,L"选择");
+            m_ptoolBar->ShowButton(TOOLBARPRO_MIDDLE_TEXTBUTTON,true);
+            if(bChanged){
+                m_ptoolBar->SetButton(TOOLBARPRO_RIGHT_TEXTBUTTON,true,true,L"保存");
+            }else{
+                m_ptoolBar->SetButton(TOOLBARPRO_RIGHT_TEXTBUTTON,true,true,L"退出");
+            }
+            m_ptoolBar->Invalidate();
+        }else{
+            m_ptoolBar->SetButton(TOOLBARPRO_LEFT_TEXTBUTTON,true,true,L"返回");
+            m_ptoolBar->ShowButton(TOOLBARPRO_MIDDLE_TEXTBUTTON,false);
+            m_ptoolBar->SetButton(TOOLBARPRO_RIGHT_TEXTBUTTON,true,true,L"删除");
+        }
     }
 
     virtual LRESULT MzDefWndProc(UINT message, WPARAM wParam, LPARAM lParam){
@@ -215,12 +254,14 @@ protected:
                 int area = HIWORD(lParam);
                 if(area == 2){
                     FestivalItemCollection * pl = 
-                        static_cast<FestivalItemCollection*>(m_list.GetCustomItemCollection());
+                        static_cast<FestivalItemCollection*>(m_plist->GetCustomItemCollection());
                     Ui_FestivalEdit m_Editor;
                     int nRet = m_Editor.ShowModifyDialog(pl->fio->query_at(index),m_hWnd);
                     if(nRet == ID_OK){
                         ::MzMessageAutoBoxV2(m_hWnd,L"节日修改完成",MZV2_MB_NONE,1000,true);
-                        m_list.Invalidate();
+                        m_plist->Invalidate();
+                        bChanged = true;
+                        UpdateToolbar();
                     }
                 }
             }
@@ -248,7 +289,7 @@ protected:
         case MZ_IDC_BUTTONBAR_SUB:
             {
                 int index = lParam;
-                UpdateSubButtonBar(m_ButtonBar0.GetHighLightButton(),index);
+                UpdateSubButtonBar(m_pButtonBar0->GetHighLightButton(),index);
                 Invalidate();
                 break;
             }
@@ -261,43 +302,36 @@ protected:
                     if (!delmode)
                     {
                         delmode = true;
-                        m_list.SetMultiSelectMode(UILISTEX_MULTISELECT_LEFT);
-
-                        m_toolBar.SetButton(TOOLBARPRO_LEFT_TEXTBUTTON,true,true,L"返回");
-                        m_toolBar.ShowButton(TOOLBARPRO_MIDDLE_TEXTBUTTON,false);
-                        m_toolBar.SetButton(TOOLBARPRO_RIGHT_TEXTBUTTON,true,true,L"删除");
+                        m_plist->SetMultiSelectMode(UILISTEX_MULTISELECT_LEFT);
+                        Invalidate();
+                    }else{
+                        delmode = false;
+                        m_plist->SetMultiSelectMode();
+                        m_plist->SetSelectedIndex(-1);
                         Invalidate();
                         //UpdateWindow();
                     }
-                    else
-                    {
-                        delmode = false;
-                        m_list.SetMultiSelectMode();
-                        m_list.SetSelectedIndex(-1);
-                        m_toolBar.SetButton(TOOLBARPRO_LEFT_TEXTBUTTON,true,true,L"选择");
-                        m_toolBar.ShowButton(TOOLBARPRO_MIDDLE_TEXTBUTTON,true);
-                        m_toolBar.SetButton(TOOLBARPRO_RIGHT_TEXTBUTTON,true,true,L"保存");
-                        Invalidate();
-                        //UpdateWindow();
-                    }   
+                    UpdateToolbar();
                 }else if (index == TOOLBARPRO_MIDDLE_TEXTBUTTON){
                     Ui_FestivalEdit m_Editor;
                     Festival f;
-                    if(m_ButtonBar0.GetHighLightButton() == 2){
+                    if(m_pButtonBar0->GetHighLightButton() == 2){
                         f.type = FestivalSolarRemind;
-                        f.info1.type = (ReminderType)(m_ButtonBar1.GetHighLightButton() + 1);
-                    }else if(m_ButtonBar0.GetHighLightButton() == 0){
-                        f.type = (FestivalType)(FestivalLunarBirth + m_ButtonBar1.GetHighLightButton());
-                    }else if(m_ButtonBar0.GetHighLightButton() == 1){
-                        f.type = (FestivalType)(FestivalLunar + m_ButtonBar1.GetHighLightButton());
+                        f.info1.type = (ReminderType)(m_pButtonBar1->GetHighLightButton() + 1);
+                    }else if(m_pButtonBar0->GetHighLightButton() == 0){
+                        f.type = (FestivalType)(FestivalLunarBirth + m_pButtonBar1->GetHighLightButton());
+                    }else if(m_pButtonBar0->GetHighLightButton() == 1){
+                        f.type = (FestivalType)(FestivalLunar + m_pButtonBar1->GetHighLightButton());
                     }
                     int nRet = m_Editor.ShowAppendDialog(&f,m_hWnd);
                     if(nRet == ID_OK){
                         FestivalItemCollection * pl = 
-                            static_cast<FestivalItemCollection*>(m_list.GetCustomItemCollection());
+                            static_cast<FestivalItemCollection*>(m_plist->GetCustomItemCollection());
                         if(pl->AppendItem(&f)){
                             ::MzMessageAutoBoxV2(m_hWnd,L"新建节日完成",MZV2_MB_NONE,1000,true);
-                            m_list.Invalidate();
+                            m_plist->Invalidate();
+                            bChanged = true;
+                            UpdateToolbar();
                         }else{
                             ::MzMessageAutoBoxV2(m_hWnd,L"新建节日失败",MZV2_MB_NONE,1000,true);
                         }
@@ -305,8 +339,8 @@ protected:
                 }else if (index == TOOLBARPRO_RIGHT_TEXTBUTTON){
                     if (delmode)
                     {
-                        IItemCollection* pItemCollection = m_list.GetCustomItemCollection();
-                        for (int i = 0; i < m_list.GetItemCount();)
+                        IItemCollection* pItemCollection = m_plist->GetCustomItemCollection();
+                        for (int i = 0; i < m_plist->GetItemCount();)
                         {
                             if (pItemCollection->IsMultiSelected(i))
                             {
@@ -317,21 +351,29 @@ protected:
                                 i++;
                             }
                         }
-                        m_list.Invalidate();
+                        m_plist->Invalidate();
+                        bChanged = true;
+                        UpdateToolbar();
                     }else{  //保存
-                       FestivalItemCollection * pl = 
-                           static_cast<FestivalItemCollection*>(m_list.GetCustomItemCollection());
-                       if(pl->SaveList()){
-                           if(CheckDeskPlugin() == DP_STATUS_OK){
-                               if(::MzMessageBoxV2(m_hWnd,
-                                   L"保存完毕，是否立即刷新农历桌面插件？",
-                                   MZV2_MB_YESNO,true) == 1){
-                                       PostDPRequest();
-                               }
-                           }else{
-                               ::MzMessageAutoBoxV2(m_hWnd,L"保存完毕",MZV2_MB_NONE,1000,true);
-                           }
-                       }
+                        if(bChanged){
+                            bChanged = false;
+                            FestivalItemCollection * pl = 
+                                static_cast<FestivalItemCollection*>(m_plist->GetCustomItemCollection());
+                            if(pl->SaveList()){
+                                if(CheckDeskPlugin() == DP_STATUS_OK){
+                                    if(::MzMessageBoxV2(m_hWnd,
+                                        L"保存完毕，是否立即刷新农历插件？",
+                                        MZV2_MB_YESNO,true) == 1){
+                                            PostDPRequest();
+                                    }
+                                }else{
+                                    ::MzMessageAutoBoxV2(m_hWnd,L"保存完毕",MZV2_MB_NONE,1000,true);
+                                }
+                            }
+                            UpdateToolbar();
+                        }else{
+                            PostQuitMessage(0);
+                        }
                     }
                 }
             break;
@@ -340,14 +382,14 @@ protected:
     }
 };
 
-MZ_IMPLEMENT_DYNAMIC(CSampleMainWnd);
+MZ_IMPLEMENT_DYNAMIC(FestivalEditorWnd);
 
 // 从 CMzApp 派生的应用程序类
 class CSampleMainApp : public CMzApp
 {
 public:
     // 应用程序的主窗口
-    CSampleMainWnd m_MainWnd;
+    FestivalEditorWnd m_MainWnd;
 
     // 应用程序的初始化
     virtual BOOL Init()
@@ -355,6 +397,18 @@ public:
         // 初始化 COM 组件
         CoInitializeEx(0, COINIT_MULTITHREADED);
 
+        HANDLE m_hCHDle = CreateMutex(NULL,true,L"FestivalEditor");
+        if(GetLastError() == ERROR_ALREADY_EXISTS)
+        {
+            HWND pWnd=FindWindow(m_MainWnd.GetMzClassName(),NULL);
+            if(pWnd)
+            {
+                SetForegroundWindow(pWnd);
+                PostMessage(pWnd,WM_NULL,NULL,NULL);
+            }
+            PostQuitMessage(0);
+            return true; 
+        }
         // 创建主窗口
         RECT rcWork = MzGetWorkArea();
         m_MainWnd.Create(rcWork.left, rcWork.top, RECT_WIDTH(rcWork), RECT_HEIGHT(rcWork), 0, 0, 0);

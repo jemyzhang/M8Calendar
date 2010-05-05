@@ -255,6 +255,10 @@
 				RelativePath=".\UiInstructionDlg.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\WidgetManager.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Í·ÎÄ¼þ"
@@ -307,6 +311,10 @@
 			</File>
 			<File
 				RelativePath=".\UiInstructionDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\WidgetManager.h"
 				>
 			</File>
 		</Filter>

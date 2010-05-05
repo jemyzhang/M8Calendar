@@ -10,6 +10,7 @@
 class UiYiJiLabel;
 class UiGrid;
 class UiWeekBar;
+class UiFestivalInfo;
 
 #define CALENDAR_USE_GRID 1
 
@@ -31,7 +32,7 @@ public:
 	UiYiJiLabel *m_pTipyiji;
     MzGridMenu m_GridMenu;
     ImageContainer m_imgContainer;
-	UiEdit *m_pFestDetail;
+	UiFestivalInfo *m_pFestDetail;
 public:
 	CMzString getDate();
 protected:
@@ -48,6 +49,7 @@ private:
 	void updateInfo(bool forceupdate = false);
 	void showTip(bool bshow = false);
 	void updateFestDetail();
+    void InstallWidget();
 private:
 	int _year, _month, _day;
 	bool _showMonthByJieqi;

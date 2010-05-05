@@ -160,7 +160,7 @@
 				AdditionalDependencies="mzfc.lib lcess.lib"
 				OutputFile="$(OutDir)/lcal.dll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="$(SolutionDir)lib\debug"
+				AdditionalLibraryDirectories="$(SolutionDir)lib"
 				ModuleDefinitionFile="lcal.def"
 				DelayLoadDLLs="$(NOINHERIT)"
 				GenerateDebugInformation="true"

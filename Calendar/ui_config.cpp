@@ -1,7 +1,8 @@
 #include "ui_config.h"
 #include <cMzCommon.h>
-
 using namespace cMzCommon;
+
+#include "WidgetManager.h"
 
 #define MZ_IDC_TOOLBAR_MAIN 101
 #define MZ_IDC_SCROLLWIN 102
@@ -10,6 +11,7 @@ using namespace cMzCommon;
 #define MZ_IDC_LIST_CONFIG 104
 #define MZ_IDC_BUTTON_FONT_SIZE 105
 #define MZ_IDC_BUTTON_STARTUP   106
+#define MZ_IDC_BUTTON_WIDGET 107
 
 CalendarConfig AppConfig;
 
@@ -75,12 +77,23 @@ BOOL Ui_ConfigWnd::OnInitDialog() {
     m_BtnFontSize.SetShowImage2(true);
     AddUiWin(&m_BtnFontSize);
 
-	m_Toolbar.SetPos(0, GetHeight() - MZM_HEIGHT_TOOLBARPRO, GetWidth(), MZM_HEIGHT_TOOLBARPRO);
+	y += MZM_HEIGHT_BUTTONEX;
+    m_BtnWidget.SetPos(0, y, GetWidth(), MZM_HEIGHT_BUTTONEX);
+    m_BtnWidget.SetTextMaxLen(0);
+    m_BtnWidget.SetButtonType(MZC_BUTTON_LINE_BOTTOM);
+    m_BtnWidget.SetID(MZ_IDC_BUTTON_WIDGET);
+    m_BtnWidget.SetImage2(imgArrow);
+    m_BtnWidget.SetImageWidth2(imgArrow->GetImageWidth());
+    m_BtnWidget.SetShowImage2(true);
+    AddUiWin(&m_BtnWidget);
+
+    m_Toolbar.SetPos(0, GetHeight() - MZM_HEIGHT_TOOLBARPRO, GetWidth(), MZM_HEIGHT_TOOLBARPRO);
 	m_Toolbar.SetButton(TOOLBARPRO_LEFT_TEXTBUTTON, true, true, L"返回");
     m_Toolbar.SetID(MZ_IDC_TOOLBAR_MAIN);
     AddUiWin(&m_Toolbar);
 
 	updateUi();
+    UpdateWidgetStatus();
 
     return TRUE;
 }
@@ -97,6 +110,29 @@ void Ui_ConfigWnd::updateUi(){
 
 }
 
+void Ui_ConfigWnd::UpdateWidgetStatus(){
+    widget_status = 1;
+    if(WidgetManager::IsInstalled()){
+        UINT ver = WidgetManager::VersionNumber();
+        if(ver == 0){
+            widget_status = 1;
+        }else if(ver < 1000){
+            widget_status = 2;
+        }else{
+            widget_status = 0;
+        }
+    }
+
+    if(widget_status == 0){    //uninstall
+        m_BtnWidget.SetText(L"卸载农历插件");
+    }else if(widget_status == 1){ //install
+        m_BtnWidget.SetText(L"安装农历插件");
+    }else{ //update
+        m_BtnWidget.SetText(L"更新农历插件");
+    }
+    m_BtnWidget.Invalidate();
+}
+
 void Ui_ConfigWnd::OnMzCommand(WPARAM wParam, LPARAM lParam) {
     UINT_PTR id = LOWORD(wParam);
     switch (id) {
@@ -108,6 +144,42 @@ void Ui_ConfigWnd::OnMzCommand(WPARAM wParam, LPARAM lParam) {
 			break;
         case MZ_IDC_BUTTON_STARTUP:
             ShowStartupOptionDlg();
+            break;
+        case MZ_IDC_BUTTON_WIDGET:
+        {
+            if(widget_status == 0){
+                if(::MzMessageBoxV2(m_hWnd,L"确实要卸载农历插件?",MZV2_MB_YESNO,true) == 1){
+                    if(WidgetManager::Uninstall()){
+                        ::MzMessageBoxV2(m_hWnd,
+                            L"农历插件卸载成功。",MZV2_MB_OK,true);
+                    }else{
+                        ::MzMessageBoxV2(m_hWnd,
+                            L"无法卸载农历插件。",MZV2_MB_OK,true);
+                    }
+                }
+            }else if(widget_status == 1){
+                if(::MzMessageBoxV2(m_hWnd,L"确实要安装农历插件?",MZV2_MB_YESNO,true) == 1){
+                    if(WidgetManager::Install()){
+                        ::MzMessageBoxV2(m_hWnd,
+                            L"安装成功，请到桌面应用农历插件",MZV2_MB_OK,true);
+                    }else{
+                        ::MzMessageBoxV2(m_hWnd,
+                            L"无法安装农历插件。",MZV2_MB_OK,true);
+                    }
+                }
+            }else{
+                if(::MzMessageBoxV2(m_hWnd,L"确实要更新农历插件?",MZV2_MB_YESNO,true) == 1){
+                    if(WidgetManager::Uninstall() &&  WidgetManager::Install()){
+                        ::MzMessageBoxV2(m_hWnd,
+                            L"更新成功，请到桌面应用农历插件",MZV2_MB_OK,true);
+                    }else{
+                         ::MzMessageBoxV2(m_hWnd,
+                            L"无法更新农历插件。",MZV2_MB_OK,true);
+                   }
+                }
+            }
+            UpdateWidgetStatus();
+        }
             break;
         case MZ_IDC_TOOLBAR_MAIN:
         {

@@ -36,6 +36,7 @@ public:
     UiButtonEx m_BtnStartupPage;	//启动界面
     UiButtonEx m_BtnJieqi;	//节气排列方式
     UiButtonEx m_BtnFontSize;	//浏览字体大小
+    UiButtonEx m_BtnWidget;
 
 protected:
     // Initialization of the window (dialog)
@@ -47,6 +48,8 @@ private:
     void ShowJieqiOptionDlg();
     void ShowFontSizeOptionDlg();
     void ShowStartupOptionDlg();
+    void UpdateWidgetStatus();
+    UINT widget_status;
 };
 
 

@@ -219,6 +219,10 @@
 				RelativePath=".\festio.def"
 				>
 			</File>
+			<File
+				RelativePath=".\festio_res.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Í·ÎÄ¼þ"
