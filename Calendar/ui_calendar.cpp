@@ -442,13 +442,16 @@ Ui_CalendarWnd::Ui_CalendarWnd(void)
 {
 	_isMouseMoving = false;
     _year = _month = _day = 0;
+    m_pFestDetail = 0;
+    m_pTipyiji = 0;
+    m_pCalendar = 0;
 }
 
 Ui_CalendarWnd::~Ui_CalendarWnd(void)
 {
-	delete m_pFestDetail;
-	delete m_pTipyiji;
-	delete m_pCalendar;
+	if(m_pFestDetail) delete m_pFestDetail;
+	if(m_pTipyiji) delete m_pTipyiji;
+	if(m_pCalendar) delete m_pCalendar;
 }
 CMzString Ui_CalendarWnd::getDate(){
 	CMzString sDate;

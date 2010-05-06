@@ -19,8 +19,5 @@ public:
     bool checkpwd();
     // Initialization of the application
     virtual BOOL Init();
-    int Done(){
-        if(m_pShowWnd) delete m_pShowWnd;
-        return CMzApp::Done();
-    }
+    int Done();
 };

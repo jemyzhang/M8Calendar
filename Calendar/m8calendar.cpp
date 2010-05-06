@@ -107,3 +107,9 @@ BOOL M8CalendarApp::Init() {
     // return TRUE means init success.
     return TRUE;
 }
+
+int M8CalendarApp::Done(){
+    if(pfestival) delete pfestival;
+    if(m_pShowWnd) delete m_pShowWnd;
+    return CMzApp::Done();
+}
