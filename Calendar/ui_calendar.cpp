@@ -964,27 +964,23 @@ void Ui_CalendarWnd::showTip(bool bshow){
 		bool ret = _lstm.HuangliYiJi(yi,ji);
 		m_pTipyiji->setText(yi.C_Str(),ji.C_Str(),ret);
 		int row,col;
+		int maxrow = m_pCalendar->getRowCount();
 		m_pCalendar->getSelectedIndex(row,col);
-		RECT rcWork;
-		rcWork.left = CAL_ROW_HEIGHT * col + 2;
-		if(col > 2){
-			rcWork.left = 480 - 320 - 10;
+		RECT rcWork = {0,0,0,0};
+		if(row < maxrow - 2){
+			rcWork.top = m_pCalendar->GetPosY() + CAL_ROW_HEIGHT * (row + 1);
+		}else{
+			rcWork.top = m_pCalendar->GetPosY() + CAL_ROW_HEIGHT * row  - 120;
 		}
-		rcWork.top = m_pCalendar->GetTopPos() + CAL_ROW_HEIGHT * (row + 1);
-		if(row > 4){
-			rcWork.left += CAL_ROW_HEIGHT;
-			rcWork.top -= CAL_ROW_HEIGHT;
+		if(col < 2){
+			rcWork.left += (CAL_ROW_WIDTH * col + 2);
+		}else{
+			rcWork.left = 480 - 320 - 10;
 		}
 
 		rcWork.right = rcWork.left + 320;
 		rcWork.bottom = rcWork.top + 120;
-		m_pTipyiji->SetPos(rcWork.left, rcWork.bottom, RECT_WIDTH(rcWork), RECT_HEIGHT(rcWork));
-
-		RECT r2 = m_pTipyiji->GetRect();
-
-		if(r.left != r2.left || r.top != r2.top){
-			Invalidate(&r);
-		}
+		m_pTipyiji->SetPos(rcWork.left, rcWork.top, RECT_WIDTH(rcWork), RECT_HEIGHT(rcWork));
 		m_pTipyiji->Invalidate();
 	}
 }
