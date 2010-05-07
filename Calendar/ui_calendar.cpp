@@ -16,6 +16,23 @@ extern CalendarConfig AppConfig;
 
 #include <festio.h>
 extern FestivalIO *pfestival;
+using std::wstring;
+
+const COLORREF colors[8] = {
+    RGB(235,51,153), //粉红色
+    RGB(153,0,204),//紫色
+    RGB(192,216,177),//桃色
+    RGB(142,192,192),//天蓝色
+    RGB(0,225,225),//蓝绿色, 青色
+    RGB(189,167,225),//淡紫色的
+    RGB(0,182,0),//丛林绿色
+    RGB(0,192,192),//青绿色
+};
+
+typedef struct tagDrawFestInfo{
+    wstring info;
+    UCHAR t;
+}DrawFestInfo, *LPDrawFestInfo;
 
 class UiFestivalInfo : public UiEdit {
 public:
@@ -31,6 +48,61 @@ public:
     	    NULL , NULL, NULL, FALSE, 0, NULL, NULL, NULL, &pi);
         return 0;
     }
+public:
+  //  virtual void PaintWin(HDC hdcDst, RECT* prcWin, RECT* prcUpdate){
+		//UiEdit::PaintWin(hdcDst,prcWin,prcUpdate);
+		//SetBkMode(hdcDst,TRANSPARENT);
+  //      UINT fontHeight = GetFontSize();
+  //      UINT rectHeight = fontHeight + 4;
+  //      RECT rect = {prcWin->left + 5,prcWin->top + 10,prcWin->left + fontHeight,prcWin->top + 10 + rectHeight};
+  //      RECT rectText = {rect.right + 3,rect.top,prcWin->right - 5,rect.bottom};
+  //      for(int i = 0; i < infos.size(); i++){
+  //          LPDrawFestInfo p = infos.at(i);
+  //          HBRUSH bqbrush = CreateSolidBrush(colors[p->t]);
+  //          FillRect(hdcDst,&rect,bqbrush);
+  //          MzDrawText(hdcDst,p->info.c_str(),&rectText,DT_VCENTER | DT_LEFT | DT_END_ELLIPSIS);
+  //          rect.top = rect.bottom + GetLingSpace()/2;
+  //          rect.bottom = rect.top + rectHeight;
+  //          rectText.top = rect.top;
+  //          rectText.bottom = rect.bottom;
+  //      }
+  //  }
+public:
+    void appendInfo(wstring info, UCHAR t){
+        appendInfo(info.c_str(),t);
+    }
+    void appendInfo(LPCTSTR info, UCHAR t){
+        if(t < 8){
+            if(info){
+                LPDrawFestInfo pi = new DrawFestInfo;
+                pi->info = info;
+                pi->t = t;
+                infos.push_back(pi);
+            }
+        }
+    }
+    void clearInfo(){
+        for(int j = 0; j < infos.size(); j++){
+            infos.at(j)->info.clear();
+            delete infos.at(j);
+        }
+        infos.clear();
+    }
+    void Apply(){
+        wstring s;
+        for(int i = 0; i < infos.size(); i++){
+            LPDrawFestInfo p = infos.at(i);
+            s += p->info;
+            s += L"\n";
+        }
+        this->SetText(s.c_str());
+        for(int i = 0; i < infos.size(); i++){
+            LPDrawFestInfo p = infos.at(i);
+            UpdateFontColor(colors[p->t],i,0,i,100);
+        }
+    }
+private:
+    vector<LPDrawFestInfo> infos;
 };
 
 #define CAL_ROW_WIDTH	68
@@ -128,8 +200,24 @@ private:
 class UiGrid : public UiWin
 {
 public:
-	UiGrid(void);
-	~UiGrid(void);
+    UiGrid(void)
+        :UiWin()
+    {
+        _grids = 0;
+        _selbg = RGB(64,192,192);
+        _seltxt = RGB(255,255,255);
+        _rows = 1;
+        _cols = 1;
+        setGridSize(_rows,_cols);
+        _gwidth = CAL_ROW_WIDTH;
+        _gheight = CAL_ROW_HEIGHT - 1;
+        _isAutosize = false;
+    }
+    ~UiGrid(void){
+        setGridSize(0,0);	//release 
+        if(pMemDC) ReleaseDC(GetParentWnd(),pMemDC);
+        if(pBitmap) DeleteObject(pBitmap);
+    }
 	virtual void PaintWin(HDC hdcDst, RECT* prcWin, RECT* prcUpdate);
 public:
 	//if ret = false, no selection
@@ -150,19 +238,68 @@ public:
 	LPCTSTR getText(int row,int col);
 	void setSelectedBgColor(COLORREF c);
 	void setSelectedTextColor(COLORREF c);
-	void setGridAutoSize(bool);
-	void setGridSize(int width, int height);
+    void setGridAutoSize(bool a){
+    	_isAutosize = a;
+    }
+    void setGridSize(int width, int height){
+        _gwidth = width;
+        _gheight = height;
+    }
+    void setSignStatus(int row, int col, UCHAR ino, bool status = true){
+        if(!checkRange(row,col)) return;
+        if(ino > 7) return;
+        if(status){
+            _grids[row][col].signs |= (1 << ino);
+        }else{
+            _grids[row][col].signs &= ~(1 << ino);
+        }
+    }
 public:
-	void setGrids(int nRow,int nCol);
+    void setGrids(int nRow, int nCol){
+        if(_grids){
+            for(int i = 0; i < _rows; i++){
+                for(int j = 0; j < _cols; j++){
+                    _grids[i][j].text.SetBufferSize(0);
+                }
+                delete _grids[i];
+            }
+            delete _grids;
+            _grids = 0;
+        }
+        _rows = nRow;
+        _cols = nCol;
+        if(_rows >= 0 && _cols >= 0){
+            _grids = new GridAttr_ptr[_rows];
+            for(int i = 0; i < _rows; i++){
+                _grids[i] = new GridAttr_t[_cols];
+                for(int j = 0; j < _cols; j++){
+                    _grids[i][j].isSelected = false;
+                    _grids[i][j].text = 0;
+                    _grids[i][j].text1 = 0;
+                    _grids[i][j].signs = 0;
+                    _grids[i][j].textColor = RGB(0,0,0);
+                    _grids[i][j].text1Color = RGB(128,128,128);
+                    _grids[i][j].textSize = 30;
+                    _grids[i][j].text1Size = 17;
+                }
+            }
+        }
+    }
 	int getRowCount(void);
 	int getColCount(void);
 public:
-	virtual void SetPos(int x, int y, int w, int h, UINT flags=0);
+    virtual void SetPos(int x, int y, int w, int h, UINT flags=0){
+        UiWin::SetPos(x,y,w,h,flags);
+        m_nMaxX = w;
+        m_nMaxY = h;
+        pMemDC = CreateCompatibleDC(GetDC(GetParentWnd()));
+        pBitmap = CreateCompatibleBitmap(GetDC(GetParentWnd()),m_nMaxX,m_nMaxY);
+    }
 private:
 	typedef struct GridAttr{
 		CMzString text;	//正中
 		CMzString text1;	//下一行
-		CMzString text2;	//下二行
+		BYTE signs;	//记号 //最多8个
 		int textSize;
 		int text1Size;
 		COLORREF textColor;
@@ -181,32 +318,14 @@ private:
 	HDC pMemDC;             //定义内存DC指针
 	HBITMAP pBitmap;        //定义内存位图指针
 private:
-	bool checkRange(int row, int col);
+    bool checkRange(int row, int col){
+        if(row >= _rows || col >= _cols ||
+            row < 0 || col < 0){
+                return false;
+        }
+        return true;
+    }
 };
-
-UiGrid::UiGrid()
-	:UiWin()
-{
-	_grids = 0;
-	_selbg = RGB(64,192,192);
-	_seltxt = RGB(255,255,255);
-	_rows = 1;
-	_cols = 1;
-	setGridSize(_rows,_cols);
-	_gwidth = CAL_ROW_WIDTH;
-	_gheight = CAL_ROW_HEIGHT - 1;
-	_isAutosize = false;
-}
-
-UiGrid::~UiGrid(){
-	setGridSize(0,0);	//release 
-	if(pMemDC) ReleaseDC(GetParentWnd(),pMemDC);
-	if(pBitmap) DeleteObject(pBitmap);
-}
-
-void UiGrid::setGridAutoSize(bool a){
-	_isAutosize = a;
-}
 
 void UiGrid::setSelectedIndex(int row,int col){
 	if(checkRange(row,col)){
@@ -247,43 +366,6 @@ bool UiGrid::getSelectedIndex(int &row, int &col){
 	row = -1;
 	col = -1;
 	return false;
-}
-
-void UiGrid::setGridSize(int width, int height){
-	_gwidth = width;
-	_gheight = height;
-}
-
-void UiGrid::setGrids(int nRow, int nCol){
-	if(_grids){
-		for(int i = 0; i < _rows; i++){
-			for(int j = 0; j < _cols; j++){
-				_grids[i][j].text.SetBufferSize(0);
-			}
-			delete _grids[i];
-		}
-		delete _grids;
-		_grids = 0;
-	}
-	_rows = nRow;
-	_cols = nCol;
-	if(_rows >= 0 && _cols >= 0){
-		_grids = new GridAttr_ptr[_rows];
-		for(int i = 0; i < _rows; i++){
-			_grids[i] = new GridAttr_t[_cols];
-			for(int j = 0; j < _cols; j++){
-				_grids[i][j].isSelected = false;
-				_grids[i][j].text = 0;
-				_grids[i][j].text1 = 0;
-				_grids[i][j].textColor = RGB(0,0,0);
-				_grids[i][j].text1Color = RGB(128,128,128);
-				_grids[i][j].textSize = 30;
-				_grids[i][j].text1Size = 17;
-			}
-		}
-	}
-
-
 }
 
 int UiGrid::getColCount(){
@@ -345,22 +427,6 @@ int UiGrid::getTextSize(int row,int col){
 	return 0;
 }
 
-bool UiGrid::checkRange(int row, int col){
-	if(row >= _rows || col >= _cols ||
-		row < 0 || col < 0){
-			return false;
-	}
-	return true;
-}
-
-void UiGrid::SetPos(int x, int y, int w, int h, UINT flags){
-	UiWin::SetPos(x,y,w,h,flags);
-	m_nMaxX = w;
-	m_nMaxY = h;
-	pMemDC = CreateCompatibleDC(GetDC(GetParentWnd()));
-	pBitmap = CreateCompatibleBitmap(GetDC(GetParentWnd()),m_nMaxX,m_nMaxY);
-}
-
 void UiGrid::PaintWin(HDC hdcDst, RECT* prcWin, RECT* prcUpdate){
 	UiWin::PaintWin(hdcDst,prcWin,prcUpdate);
     SelectObject(pMemDC, pBitmap);
@@ -412,15 +478,41 @@ void UiGrid::PaintWin(HDC hdcDst, RECT* prcWin, RECT* prcUpdate){
                 ::SetTextColor(pMemDC,_grids[i][j].textColor);
                 FillRect(pMemDC,&frect,bqbrush);
             }
+            //text
             HFONT font = FontHelper::GetFont(_grids[i][j].textSize);
             SelectObject(pMemDC,font);
             MzDrawText( pMemDC,_grids[i][j].text.C_Str(), &textrect, DT_CENTER|DT_VCENTER );
 
+            //text1
             font = FontHelper::GetFont(_grids[i][j].text1Size);
             SelectObject(pMemDC,font);
             ::SetTextColor(pMemDC,_grids[i][j].text1Color);
             RECT text1rect = {rect.left+1,rect.top + 35,rect.right - 2,rect.bottom - 2};
             MzDrawText( pMemDC,_grids[i][j].text1.C_Str(), &text1rect, DT_CENTER|DT_VCENTER );
+            //sign rect
+            //计算bit位数
+            //UCHAR bits = 0;
+            //for(UCHAR signs = _grids[i][j].signs;
+            //    signs != 0; signs &= signs-1){
+            //        bits ++;
+            //}
+            //if(bits > 0){
+            if(_grids[i][j].signs > 0){
+                //绘制
+#define SIGN_WIDTH 6
+#define SIGN_HEIGHT 6
+                RECT signrect = {rect.left+5,rect.top + 5,rect.left + 5 + SIGN_WIDTH,rect.top + 5 + SIGN_HEIGHT};
+                UCHAR pos = 0;
+                for(UCHAR signs = _grids[i][j].signs;
+                    signs != 0; signs >>= 1, pos++){
+                        if(signs&0x1){
+                            bqbrush = CreateSolidBrush(colors[pos]);
+                            FillRect(pMemDC,&signrect,bqbrush);
+                            signrect.top += SIGN_HEIGHT;
+                            signrect.bottom = signrect.top + SIGN_HEIGHT;
+                        }
+                }
+            }
         }
     }
     SelectObject(pMemDC,poldpen);
@@ -667,34 +759,41 @@ void Ui_CalendarWnd::updateGrid(){
 				break;
 			}
 		}
+
         wchar_t holidayname[20];
         memset(holidayname,0,sizeof(holidayname));
-		bool b = false;
-		if(pfestival){
+        if(pfestival){
 			if(!_lstm.isLunarLeapMonth()){
 				LSDate l = _lstm.getLunarDate();
-				b = pfestival->LunarHoliday(l.month,l.day,holidayname,1);
+                if(pfestival->LunarHoliday(l.month,l.day,holidayname,1)){
+                    m_pCalendar->setSignStatus(r,c,2);
+                }
+                pfestival->queryBirthday(l.month,l.day,true);
+                //农历生日记号
+                if(pfestival->BirthdaySize()){
+                    m_pCalendar->setSignStatus(r,c,0);
+                }
 			}
 		}
-		if(!b){
-			b = _lstm.LunarHoliday(holidayname);
-		}
-		if(b){
+        if(_lstm.LunarHoliday(holidayname)){
 			m_pCalendar->setText1(r,c,holidayname);
 			m_pCalendar->setText1Color(r,c,RGB(64,64,255));
 		}
 
 		memset(holidayname,0,sizeof(holidayname));
-		b = false;
 
 		if(pfestival){
 			LSDate s = _lstm.getSolarDate();
-			b = pfestival->SolarHoliday(s.month,s.day,holidayname,1);
+            if(pfestival->SolarHoliday(s.month,s.day,holidayname,1)){
+                m_pCalendar->setSignStatus(r,c,3);
+            }
+            //公历生日记号
+            pfestival->queryBirthday(s.month,s.day,false);
+            if(pfestival->BirthdaySize()){
+                m_pCalendar->setSignStatus(r,c,1);
+            }
 		}
-		if(!b){
-			b = _lstm.SolarHoliday(holidayname);
-		}
-		if(b){
+		if(_lstm.SolarHoliday(holidayname)){
 			m_pCalendar->setText1(r,c,holidayname);
 			m_pCalendar->setText1Color(r,c,RGB(255,0,0));
 		}
@@ -1056,8 +1155,6 @@ void Ui_CalendarWnd::updateInfo(bool forceupdate){
 	}
 }
 
-using std::wstring;
-
 void Ui_CalendarWnd::updateFestDetail(){
 	LCAL _lstm(_year,_month,_day);
 	_lstm.SolarToLunar();
@@ -1067,6 +1164,7 @@ void Ui_CalendarWnd::updateFestDetail(){
 	m_pFestDetail->SetPos(0,calendarBottom,GetWidth(),GetHeight() - calendarBottom - MZM_HEIGHT_TOOLBARPRO);
 
 	wstring sfestinfo;
+    m_pFestDetail->clearInfo();
 
 	if(pfestival){
 		if(!_lstm.isLunarLeapMonth()){
@@ -1080,32 +1178,32 @@ void Ui_CalendarWnd::updateFestDetail(){
 				if(pf->detail && pf->info0.year <= _year){
 					wchar_t msg[200] = {0};
 					wsprintf(msg,pf->detail,_year - pf->info0.year + 1);
-					sfestinfo += L"[";
+					sfestinfo = L"[";
 					sfestinfo += pf->info1.name;
 					sfestinfo += L"] : ";
 					sfestinfo += msg;
-					sfestinfo += L"\n";					
+                    m_pFestDetail->appendInfo(sfestinfo,0);
 				}
 			}
 
 			pfestival->query(l.month,l.day,FestivalLunar);
 			for(int i = 0; i < pfestival->query_size(); i++){
 				lpFestival pf = pfestival->query_at(i);
-				sfestinfo += L"[";
+				sfestinfo = L"[";
 				sfestinfo += pf->info1.name;
 				sfestinfo += L"] : ";
 				sfestinfo += pf->detail;
-				sfestinfo += L"\n";
+                m_pFestDetail->appendInfo(sfestinfo,2);
 			}
 
 			pfestival->query(l.month,l.day,FestivalLunarHoliday);
 			for(int i = 0; i < pfestival->query_size(); i++){
 				lpFestival pf = pfestival->query_at(i);
-				sfestinfo += L"[";
+				sfestinfo = L"[";
 				sfestinfo += pf->info1.name;
 				sfestinfo += L"] : ";
 				sfestinfo += pf->detail;
-				sfestinfo += L"\n";
+                m_pFestDetail->appendInfo(sfestinfo,2);
 			}
 		}
 		LSDate l = _lstm.getSolarDate();
@@ -1117,35 +1215,36 @@ void Ui_CalendarWnd::updateFestDetail(){
 			if(pf->detail && pf->info0.year <= _year){
 				wchar_t msg[200] = {0};
 				wsprintf(msg,pf->detail,_year - pf->info0.year + 1);
-				sfestinfo += L"[";
+				sfestinfo = L"[";
 				sfestinfo += pf->info1.name;
 				sfestinfo += L"] : ";
 				sfestinfo += msg;
-				sfestinfo += L"\n";
+                m_pFestDetail->appendInfo(sfestinfo,1);
 			}
 		}
 
 		pfestival->query(l.month,l.day,FestivalSolar);
 		for(int i = 0; i < pfestival->query_size(); i++){
 			lpFestival pf = pfestival->query_at(i);
-			sfestinfo += L"[";
+			sfestinfo = L"[";
 			sfestinfo += pf->info1.name;
 			sfestinfo += L"] : ";
 			sfestinfo += pf->detail;
-			sfestinfo += L"\n";
+            m_pFestDetail->appendInfo(sfestinfo,3);
 		}
 		pfestival->query(l.month,l.day,FestivalSolarHoliday);
 		for(int i = 0; i < pfestival->query_size(); i++){
 			lpFestival pf = pfestival->query_at(i);
-			sfestinfo += L"[";
+			sfestinfo = L"[";
 			sfestinfo += pf->info1.name;
 			sfestinfo += L"] : ";
 			sfestinfo += pf->detail;
-			sfestinfo += L"\n";
+            m_pFestDetail->appendInfo(sfestinfo,3);
 		}
 	}
 	if(sfestinfo.length()){
-		m_pFestDetail->SetText(sfestinfo.c_str());
+		m_pFestDetail->SetText(L"\0");
+        m_pFestDetail->Apply();
 	}else{
 		m_pFestDetail->SetText(L"无节日信息");
 	}
