@@ -1,0 +1,93 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// 中文(中华人民共和国) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
+#ifdef _WIN32
+LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
+#pragma code_page(936)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// RCDATA
+//
+IDB_PNG_ZODIAC_00       RCDATA                  "images\\0.png"
+IDB_PNG_ZODIAC_01       RCDATA                  "images\\1.png"
+IDB_PNG_ZODIAC_02       RCDATA                  "images\\2.png"
+IDB_PNG_ZODIAC_03       RCDATA                  "images\\3.png"
+IDB_PNG_ZODIAC_04       RCDATA                  "images\\4.png"
+IDB_PNG_ZODIAC_05       RCDATA                  "images\\5.png"
+IDB_PNG_ZODIAC_06       RCDATA                  "images\\6.png"
+IDB_PNG_ZODIAC_07       RCDATA                  "images\\7.png"
+IDB_PNG_ZODIAC_08       RCDATA                  "images\\8.png"
+IDB_PNG_ZODIAC_09       RCDATA                  "images\\9.png"
+IDB_PNG_ZODIAC_10       RCDATA                  "images\\10.png"
+IDB_PNG_ZODIAC_11       RCDATA                  "images\\11.png"
+
+IDB_PNG_SUNSIGN_00       RCDATA                  "images\\水瓶座.png"
+IDB_PNG_SUNSIGN_01       RCDATA                  "images\\双鱼座.png"
+IDB_PNG_SUNSIGN_02       RCDATA                  "images\\白羊座.png"
+IDB_PNG_SUNSIGN_03       RCDATA                  "images\\金牛座.png"
+IDB_PNG_SUNSIGN_04       RCDATA                  "images\\双子座.png"
+IDB_PNG_SUNSIGN_05       RCDATA                  "images\\巨蟹座.png"
+IDB_PNG_SUNSIGN_06       RCDATA                  "images\\狮子座.png"
+IDB_PNG_SUNSIGN_07       RCDATA                  "images\\处女座.png"
+IDB_PNG_SUNSIGN_08       RCDATA                  "images\\天秤座.png"
+IDB_PNG_SUNSIGN_09       RCDATA                  "images\\天蝎座.png"
+IDB_PNG_SUNSIGN_10       RCDATA                  "images\\射手座.png"
+IDB_PNG_SUNSIGN_11       RCDATA                  "images\\摩羯座.png"
+#endif    // 中文(中华人民共和国) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

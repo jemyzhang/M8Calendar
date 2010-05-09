@@ -810,3 +810,37 @@ void LCAL::getDateFromJulianDay(unsigned int julianDay, DWORD *year, DWORD *mont
     *day = d;
 }
 
+UCHAR LCAL::GetSunSign(DWORD month, DWORD day, WCHAR* name){
+	struct tagSigns {
+		DWORD sday;
+		LPCTSTR name;
+	}signs[] = {
+		{20,L"Ë®Æ¿×ù"}, //1
+		{19,L"Ë«Óã×ù"}, //2
+		{21,L"°×Ñò×ù"},
+		{20,L"½ðÅ£×ù"},
+		{21,L"Ë«×Ó×ù"},
+		{22,L"¾ÞÐ·×ù"},
+		{23,L"Ê¨×Ó×ù"},
+		{23,L"´¦Å®×ù"},
+		{23,L"Ìì³Ó×ù"}, //9
+		{24,L"ÌìÐ«×ù"}, //10
+		{23,L"ÉäÊÖ×ù"}, //11
+		{22,L"Ä¦ôÉ×ù"}, //12
+	};
+	if(month > 12) return 12;
+	UCHAR sign = 0;
+	if(day < signs[month - 1].sday){
+		if(month == 1){
+			sign = 11;
+		}else{
+			sign = month - 2;
+		}
+	}else{
+		sign = month - 1;
+	}
+	if(name){
+		wsprintf(name,L"%s",signs[sign].name);
+	}
+	return sign;
+}

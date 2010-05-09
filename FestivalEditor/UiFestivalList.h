@@ -33,32 +33,13 @@ public:
 private:
     bool updateListVector();
 public:
-    virtual ImagingHelper* GetImageFirst(int nIndex)
-    {
-        ImagingHelper* pimg = m_container.LoadImage(GetMzResV2ModuleHandle(), MZRESV2_IDR_PNG_NEW_BUILT, true);
-        return pimg;
-    }
-
-    virtual ImagingHelper* GetImageSecond(int nIndex)
-    {
-        return NULL;
-    }
-
-    virtual ImagingHelper* GetImageFirst_Pressed(int nIndex)
-    {
-        ImagingHelper* pimg = m_container.LoadImage(GetMzResV2ModuleHandle(), MZRESV2_IDR_PNG_NEW_BUILT_PRESSED, true);
-        return pimg;
-    }
-
-    virtual ImagingHelper* GetImageSecond_Pressed(int nIndex)
-    {
-        return NULL;
-    }
+    virtual ImagingHelper* GetImageFirst(int nIndex);
+    virtual ImagingHelper* GetImageSecond(int nIndex);
+    virtual ImagingHelper* GetImageFirst_Pressed(int nIndex);
+    virtual ImagingHelper* GetImageSecond_Pressed(int nIndex);
 
     virtual CMzString GetTitle(int nIndex);
-
     virtual CMzString GetDescription(int nIndex);
-
     virtual CMzString GetPostscript1(int nIndex);
     virtual CMzString GetPostscript2(int nIndex);
 

@@ -65,7 +65,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions=" /subsystem:windowsce,6.00"
-				AdditionalDependencies="mzfc.lib platformapi.lib  lcessd.lib festiod.lib"
+				AdditionalDependencies="mzfc.lib platformapi.lib  lcessd.lib festiod.lib  lcal.lib"
 				OutputFile="$(OutDir)/FestivalEditor.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="$(SolutionDir)lib"
@@ -153,7 +153,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions=" /subsystem:windowsce,6.00"
-				AdditionalDependencies="mzfc.lib platformapi.lib lcess.lib festio.lib"
+				AdditionalDependencies="mzfc.lib platformapi.lib lcess.lib festio.lib lcal.lib"
 				OutputFile="$(OutDir)/FestivalEditor.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="$(SolutionDir)lib"
@@ -224,6 +224,10 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath=".\resource.h"
+				>
+			</File>
+			<File
 				RelativePath=".\ui_festivaledit.h"
 				>
 			</File>
@@ -237,6 +241,10 @@
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
+			<File
+				RelativePath=".\FestivalEditor.rc"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>

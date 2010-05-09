@@ -104,6 +104,8 @@ public:
 	//宜，忌
 	//特殊情况返回true, 内容存放在yi中
 	bool HuangliYiJi(CMzString &yi, CMzString &ji);
+	//返回星座
+	static UCHAR GetSunSign(DWORD month, DWORD day, WCHAR* name);
 public:
 	unsigned int julianDayFromDate(int year, int month, int day);
 	void getDateFromJulianDay(unsigned int julianDay, DWORD *year, DWORD *month, DWORD *day);

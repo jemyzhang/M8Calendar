@@ -2,36 +2,13 @@
 #include <mzfc_inc.h>
 #include <festio.h>
 
-class UiCheckLabel : public UiButton{
-public:
-    UiCheckLabel() { 
-        SetButtonType(MZC_BUTTON_NONE);
-    }
-    void SetCheckStatus(bool bchecked){
-        if(ischecked != bchecked){
-            ischecked = bchecked;
-            Invalidate();
-        }
-    }
-    bool GetCheckStatus(){
-        return ischecked;
-    }
-    virtual void PaintWin(HDC hdcDst, RECT* prcWin, RECT* prcUpdate){
-        RECT prcCheckBox = *prcWin;
-        prcCheckBox.right = prcWin->left + 40;
-        MzDrawControl(hdcDst,&prcCheckBox,MZCV2_CHECKBOX_SELECT,ischecked);
-
-        RECT prcLabelText = *prcWin;
-        prcLabelText.left = prcWin->left + 45;
-        ::SetTextColor(hdcDst,RGB(0,0,0));
-        MzDrawText(hdcDst,GetText().C_Str(),&prcLabelText,DT_VCENTER|DT_LEFT|DT_WORD_ELLIPSIS);
-    }
-private:
-    bool ischecked;
-};
+class UiCheckLabel;
 
 class Ui_FestivalEdit : public CMzWndEx{
     MZ_DECLARE_DYNAMIC(Ui_FestivalEdit);
+public:
+	Ui_FestivalEdit();
+	~Ui_FestivalEdit();
 private:
     UiStatic m_lblType;
     UiButton m_btnType;
@@ -39,8 +16,9 @@ private:
     UiSingleLineEdit m_edtDetail;
     UiStatic m_lblDate;
     UiButton m_btnDate;
-    UiCheckLabel m_useYear;
+    UiCheckLabel *m_puseYear;
     UiToolBarPro m_toolBar;
+	UiStatic *m_plblDetail;
 protected:
     virtual BOOL OnInitDialog();
     virtual void OnMzCommand(WPARAM wParam, LPARAM lParam);
@@ -50,6 +28,7 @@ public:
 private:
     void UpdateUi();
     bool StoreValue();  //检查/保存临时值到返回值
+	void UpdateDetail();	//农历/公历生日信息
 private:
     lpFestival m_pfest;
     Festival m_temp;

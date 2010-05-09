@@ -4,6 +4,35 @@
 #include <cMzCommon.h>
 using namespace cMzCommon;
 
+class UiCheckLabel : public UiButton{
+public:
+    UiCheckLabel() { 
+        SetButtonType(MZC_BUTTON_NONE);
+    }
+    void SetCheckStatus(bool bchecked){
+        if(ischecked != bchecked){
+            ischecked = bchecked;
+            Invalidate();
+        }
+    }
+    bool GetCheckStatus(){
+        return ischecked;
+    }
+    virtual void PaintWin(HDC hdcDst, RECT* prcWin, RECT* prcUpdate){
+        RECT prcCheckBox = *prcWin;
+        prcCheckBox.right = prcWin->left + 40;
+        MzDrawControl(hdcDst,&prcCheckBox,MZCV2_CHECKBOX_SELECT,ischecked);
+
+        RECT prcLabelText = *prcWin;
+        prcLabelText.left = prcWin->left + 45;
+        ::SetTextColor(hdcDst,RGB(0,0,0));
+        MzDrawText(hdcDst,GetText().C_Str(),&prcLabelText,DT_VCENTER|DT_LEFT|DT_WORD_ELLIPSIS);
+    }
+private:
+    bool ischecked;
+};
+
+/////////////////////////////////////////////
 MZ_IMPLEMENT_DYNAMIC(Ui_FestivalEdit);
 
 #define MZ_IDC_BUTTON_TYPE	101
@@ -11,6 +40,8 @@ MZ_IMPLEMENT_DYNAMIC(Ui_FestivalEdit);
 #define MZ_IDC_USE_YEAR	103
 #define MZ_IDC_EDIT_NAME	104
 #define MZ_IDC_EDIT_DETAIL  105
+
+#define MZ_IDC_LBL_DETAIL 106
 
 #define MZ_IDC_TOOLBAR	108
 
@@ -20,6 +51,16 @@ static const LPCTSTR names[] = {
 };
 
 #define LINE_HEIGHT MZM_HEIGHT_BUTTON_GRAY
+
+Ui_FestivalEdit::Ui_FestivalEdit(){
+	m_puseYear = 0;
+	m_plblDetail = 0;
+}
+
+Ui_FestivalEdit::~Ui_FestivalEdit(){
+	if(m_puseYear) delete m_puseYear;
+	if(m_plblDetail) delete m_plblDetail;
+}
 
 BOOL Ui_FestivalEdit::OnInitDialog(){
         if (!CMzWndEx::OnInitDialog())
@@ -65,10 +106,17 @@ BOOL Ui_FestivalEdit::OnInitDialog(){
         m_btnDate.SetButtonType(MZC_BUTTON_DOWNLOAD);
         AddUiWin(&m_btnDate);
 
-        m_useYear.SetPos(GetWidth() - 140,y,140,LINE_HEIGHT);
-        m_useYear.SetID(MZ_IDC_USE_YEAR);
-        m_useYear.SetText(L"使用年份");
-        AddUiWin(&m_useYear);
+		m_puseYear = new UiCheckLabel;
+        m_puseYear->SetPos(GetWidth() - 140,y,140,LINE_HEIGHT);
+        m_puseYear->SetID(MZ_IDC_USE_YEAR);
+        m_puseYear->SetText(L"使用年份");
+        AddUiWin(m_puseYear);
+
+		y += LINE_HEIGHT;
+		m_plblDetail = new UiStatic;
+		m_plblDetail->SetPos(0,y,GetWidth(),LINE_HEIGHT);
+		m_plblDetail->SetID(MZ_IDC_LBL_DETAIL);
+        AddUiWin(m_plblDetail);
 
         m_toolBar.SetID(MZ_IDC_TOOLBAR);
         m_toolBar.SetPos(0, GetHeight() - MZM_HEIGHT_TOOLBARPRO, GetWidth(), MZM_HEIGHT_TOOLBARPRO);
@@ -132,7 +180,7 @@ void Ui_FestivalEdit::UpdateUi(){
 
     wchar_t s[20];
     if(m_temp.type == FestivalSolarRemind){
-        m_useYear.SetVisible(false);
+        m_puseYear->SetVisible(false);
         if(m_temp.info1.type == ReminderCountdown ||
             m_temp.info1.type == ReminderCountup){
                 wsprintf(s, L"%04d年%02d月%02d日", m_temp.info0.year, m_temp.month, m_temp.day);
@@ -143,22 +191,22 @@ void Ui_FestivalEdit::UpdateUi(){
             wsprintf(s,L"每月%d号",m_temp.info0.idx);
         }
     }else{
-        m_useYear.SetVisible(true);
+        m_puseYear->SetVisible(true);
         if(m_temp.info0.year == 0){
-            m_useYear.SetCheckStatus(false);
+            m_puseYear->SetCheckStatus(false);
             wsprintf(s, L"%02d月%02d日", m_temp.month, m_temp.day);
         }else{
-            m_useYear.SetCheckStatus(true);
+            m_puseYear->SetCheckStatus(true);
             wsprintf(s, L"%04d年%02d月%02d日", m_temp.info0.year, m_temp.month, m_temp.day);
         }
     }
 
     if(m_temp.type == FestivalLunarBirth ||
         m_temp.type == FestivalSolarBirth){
-            m_useYear.SetCheckStatus(true);
-            m_useYear.SetEnable(false);
+            m_puseYear->SetCheckStatus(true);
+            m_puseYear->SetEnable(false);
     }else{
-        m_useYear.SetEnable(true);
+        m_puseYear->SetEnable(true);
     }
 
     if(m_temp.info0.year == 0 && m_temp.month == 0 && m_temp.day == 0){
@@ -166,6 +214,7 @@ void Ui_FestivalEdit::UpdateUi(){
     }else{
         m_btnDate.SetText(s);
     }
+	UpdateDetail();
     Invalidate();
 }
 
@@ -187,7 +236,7 @@ bool Ui_FestivalEdit::StoreValue(){
 
     //检查年份是否有效
     if(m_temp.type != FestivalSolarRemind){
-        if(!m_useYear.GetCheckStatus()){
+        if(!m_puseYear->GetCheckStatus()){
             m_pfest->info0.year = 0;
         }
     }
@@ -212,8 +261,8 @@ void Ui_FestivalEdit::OnMzCommand(WPARAM wParam, LPARAM lParam){
         switch(id)
         {
         case MZ_IDC_USE_YEAR:
-            m_useYear.SetCheckStatus(!m_useYear.GetCheckStatus());
-            m_useYear.Invalidate();
+            m_puseYear->SetCheckStatus(!m_puseYear->GetCheckStatus());
+            m_puseYear->Invalidate();
             break;
         case MZ_IDC_TOOLBAR:
             {
@@ -257,18 +306,19 @@ void Ui_FestivalEdit::OnMzCommand(WPARAM wParam, LPARAM lParam){
                 m_btnDate.SetText(0);
                 m_btnDate.Invalidate();
                 if(m_temp.type == FestivalSolarRemind){
-                    m_useYear.SetVisible(false);
+                    m_puseYear->SetVisible(false);
                 }else{
-                    m_useYear.SetVisible(true);
+                    m_puseYear->SetVisible(true);
                     if(m_temp.type == FestivalLunarBirth ||
                         m_temp.type == FestivalSolarBirth){
-                            m_useYear.SetCheckStatus(true);
-                            m_useYear.SetEnable(false);
+                            m_puseYear->SetCheckStatus(true);
+                            m_puseYear->SetEnable(false);
                     }else{
-                        m_useYear.SetEnable(true);
+                        m_puseYear->SetEnable(true);
                     }
                 }
-                m_useYear.Invalidate();
+                m_puseYear->Invalidate();
+				UpdateDetail();
             }
             break;
         case MZ_IDC_BUTTON_DATE:
@@ -277,7 +327,7 @@ void Ui_FestivalEdit::OnMzCommand(WPARAM wParam, LPARAM lParam){
                 MzSetDaily setDateDlg;
                 int items = 3;
                 if(m_temp.type != FestivalSolarRemind){
-                    if(!m_useYear.GetCheckStatus()){
+                    if(!m_puseYear->GetCheckStatus()){
                         items = 2;
                     }
                 }else{
@@ -369,8 +419,53 @@ void Ui_FestivalEdit::OnMzCommand(WPARAM wParam, LPARAM lParam){
                     }
                     m_btnDate.SetText(str.C_Str());
                     m_btnDate.Invalidate();
+					UpdateDetail();
                 }
             }
             break;
         }
+}
+
+//增加农历、生肖、星座信息@2010-5-8
+#include <lcal.h>
+
+void Ui_FestivalEdit::UpdateDetail(){
+	m_plblDetail->SetText(L"\0");
+	if(m_temp.type == FestivalLunarBirth){
+		if(m_temp.info0.year != 0 && 
+			m_temp.month != 0 && 
+			m_temp.day != 0){
+				LCAL lstm(m_temp.info0.year);
+				lstm.setLunarDate(m_temp.info0.year,m_temp.month,m_temp.day);
+				LSDate s1 = lstm.getSolarDate();
+				WCHAR dstr[32];
+				WCHAR sunsign[8];
+				lstm.GetSunSign(s1.month,s1.day,sunsign);
+				wsprintf(dstr,L"公历:%04d-%02d-%02d %s %s",
+					s1.year,s1.month,s1.day,
+					lstm.Zodiac().C_Str(),
+					sunsign);
+
+				m_plblDetail->SetText(dstr);
+		}
+	}else if(m_temp.type == FestivalSolarBirth){
+		if(m_temp.info0.year != 0 && 
+			m_temp.month != 0 && 
+			m_temp.day != 0){
+				LCAL lstm(m_temp.info0.year,m_temp.month,m_temp.day);
+				lstm.SolarToLunar();
+				LSDate s1 = lstm.getSolarDate();
+				LSDate s2 = lstm.getLunarDate();
+				WCHAR dstr[32];
+				WCHAR sunsign[8];
+				lstm.GetSunSign(s1.month,s1.day,sunsign);
+				wsprintf(dstr,L"农历:%04d-%02d-%02d %s %s",
+					s2.year,s2.month,s2.day,
+					lstm.Zodiac().C_Str(),
+					sunsign);
+
+				m_plblDetail->SetText(dstr);
+		}
+	}
+	m_plblDetail->Invalidate();
 }
