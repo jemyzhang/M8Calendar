@@ -105,8 +105,8 @@ private:
     vector<LPDrawFestInfo> infos;
 };
 
-#define CAL_ROW_WIDTH	68
-#define CAL_ROW_HEIGHT	61
+#define CAL_ROW_WIDTH	67
+#define CAL_ROW_HEIGHT	60
 
 class UiWeekBar : public UiHeadingBar{
 public:
@@ -205,13 +205,15 @@ public:
     {
         _grids = 0;
         _selbg = RGB(64,192,192);
-        _seltxt = RGB(255,255,255);
+        _seltxt = RGB(0,0,0);
         _rows = 1;
         _cols = 1;
         setGridSize(_rows,_cols);
         _gwidth = CAL_ROW_WIDTH;
         _gheight = CAL_ROW_HEIGHT - 1;
         _isAutosize = false;
+		
+		imgToday = m_imgContainer.LoadImage(GetMzResV2ModuleHandle(), MZRESV2_IDR_PNG_WHEEL_SELECT, true);
     }
     ~UiGrid(void){
         setGridSize(0,0);	//release 
@@ -314,6 +316,9 @@ private:
 	int _gwidth, _gheight;
 	int m_nMaxX;
 	int m_nMaxY;
+
+	ImageContainer m_imgContainer;
+	ImagingHelper *imgToday;
 private:
 	HDC pMemDC;             //定义内存DC指针
 	HBITMAP pBitmap;        //定义内存位图指针
@@ -453,8 +458,8 @@ void UiGrid::PaintWin(HDC hdcDst, RECT* prcWin, RECT* prcUpdate){
         _gridw = _width/_cols;
         _gridh = _height/_rows;
     }
-    int _x = 0;//prcWin->left;
-    int _y = 0;//prcWin->top;
+    int _x = 8;//prcWin->left;
+    int _y = 8;//prcWin->top;
 
     HPEN pen = CreatePen(PS_SOLID, 0,RGB(128,128,128));
     HPEN poldpen = (HPEN)SelectObject(pMemDC,pen);
@@ -464,20 +469,23 @@ void UiGrid::PaintWin(HDC hdcDst, RECT* prcWin, RECT* prcUpdate){
         int cy = _y;
         for(int j = 0; j < _cols; j++){
             //格子
-            RECT rect = {cx + (_gridw-1)*j,cy + (_gridh-1)*i,cx + _gridw*j + _gridw,cy + _gridh*i + _gridh};
+            RECT rect = {
+				cx + (_gridw - 1) * j,
+				cy + (_gridh - 1) * i,
+				cx + (_gridw - 1) * j + _gridw,
+				cy + (_gridh - 1) * i + _gridh
+			};
             Rectangle(pMemDC,rect.left,rect.top,rect.right,rect.bottom);
             //格子背景
-            RECT frect = {rect.left+1,rect.top + 1,rect.right - 2,rect.bottom - 2};
-            RECT textrect = {rect.left+1,rect.top + 1,rect.right - 2,rect.bottom - 20};
+            RECT frect = {rect.left + 1,rect.top + 1,rect.right - 1,rect.bottom - 1};
+            RECT textrect = {rect.left + 1,rect.top + 1,rect.right - 2,rect.bottom - 20};
             HBRUSH bqbrush;
             if(_grids[i][j].isSelected){	//selected
                 ::SetTextColor(pMemDC,_seltxt);
-                MzDrawSelectedBg_NoLine(pMemDC,&frect);
-            }else{
-                bqbrush = CreateSolidBrush(RGB(255-16,255-16,255-16));
-                ::SetTextColor(pMemDC,_grids[i][j].textColor);
-                FillRect(pMemDC,&frect,bqbrush);
-            }
+				MzDrawSelectedBg_NoLine(pMemDC,&frect);
+			}else{
+				::SetTextColor(pMemDC,_grids[i][j].textColor);
+			}
             //text
             HFONT font = FontHelper::GetFont(_grids[i][j].textSize);
             SelectObject(pMemDC,font);
@@ -514,6 +522,20 @@ void UiGrid::PaintWin(HDC hdcDst, RECT* prcWin, RECT* prcUpdate){
                 }
             }
         }
+		//draw today
+		for(int i = 0; i < _rows; i++){
+			for(int j = 0; j < _cols; j++){
+				if(_grids[i][j].textColor == RGB(192,64,64)){
+					RECT rectHL = {
+						_x + (_gridw - 1) * j - 8,
+						_y + (_gridh - 1) * i - 10,
+						_x + (_gridw - 1) * j + _gridw + 8,
+						_y + (_gridh - 1) * i + _gridh + 10,
+					};
+					imgToday->Draw(pMemDC,&rectHL,true);
+				}
+			}
+		}
     }
     SelectObject(pMemDC,poldpen);
 	BitBlt(hdcDst,prcWin->left,prcWin->top,m_nMaxX,m_nMaxY,pMemDC,0,0,SRCCOPY);
@@ -602,7 +624,7 @@ BOOL Ui_CalendarWnd::OnInitDialog() {
 
 	y += MZM_HEIGHT_HEADINGBAR;
 	m_pCalendar = new UiGrid;
-    m_pCalendar->SetPos(1, y, GetWidth()-2, CAL_ROW_HEIGHT*6);
+    m_pCalendar->SetPos(1, y, GetWidth()-2, CAL_ROW_HEIGHT*6 + 16);
 	m_pCalendar->SetID(MZ_IDC_CALENDAR_GRID);
 	m_pCalendar->EnableNotifyMessage(true);
     AddUiWin(m_pCalendar);
@@ -968,9 +990,9 @@ void Ui_CalendarWnd::showTip(bool bshow){
 		m_pCalendar->getSelectedIndex(row,col);
 		RECT rcWork = {0,0,0,0};
 		if(row < maxrow - 2){
-			rcWork.top = m_pCalendar->GetPosY() + CAL_ROW_HEIGHT * (row + 1);
+			rcWork.top = m_pCalendar->GetPosY() + CAL_ROW_HEIGHT * (row + 1) + 8;
 		}else{
-			rcWork.top = m_pCalendar->GetPosY() + CAL_ROW_HEIGHT * row  - 120;
+			rcWork.top = m_pCalendar->GetPosY() + CAL_ROW_HEIGHT * row  - 120 + 8;
 		}
 		if(col < 2){
 			rcWork.left += (CAL_ROW_WIDTH * col + 2);
@@ -1156,7 +1178,7 @@ void Ui_CalendarWnd::updateFestDetail(){
 	_lstm.SolarToLunar();
 	
 	int calendarBottom = m_pCalendar->GetPosY() + 
-		m_pCalendar->getRowCount() * CAL_ROW_HEIGHT;
+		m_pCalendar->getRowCount() * CAL_ROW_HEIGHT + 8;
 	m_pFestDetail->SetPos(0,calendarBottom,GetWidth(),GetHeight() - calendarBottom - MZM_HEIGHT_TOOLBARPRO);
 
 	wstring sfestinfo;
