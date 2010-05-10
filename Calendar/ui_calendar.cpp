@@ -517,19 +517,20 @@ Ui_CalendarWnd::Ui_CalendarWnd(void)
 {
 	_isMouseMoving = false;
     _year = _month = _day = 0;
-    m_pFestDetail = 0;
-    m_pTipyiji = 0;
-    m_pCalendar = 0;
-    m_pZodiacImage = 0;
+    INIT_PTR(m_pFestDetail);
+    INIT_PTR(m_pTipyiji);
+    INIT_PTR(m_pCalendar);
+    INIT_PTR(m_pZodiacImage);
 }
 
 Ui_CalendarWnd::~Ui_CalendarWnd(void)
 {
-	if(m_pFestDetail) delete m_pFestDetail;
-	if(m_pTipyiji) delete m_pTipyiji;
-	if(m_pCalendar) delete m_pCalendar;
-	if(m_pZodiacImage) delete m_pZodiacImage;
+    DEL_PTR(m_pFestDetail);
+    DEL_PTR(m_pTipyiji);
+    DEL_PTR(m_pCalendar);
+    DEL_PTR(m_pZodiacImage);
 }
+
 CMzString Ui_CalendarWnd::getDate(){
 	CMzString sDate;
 	wsprintf(sDate.C_Str(), L"%4d-%02d-%02d", _year, _month, _day);

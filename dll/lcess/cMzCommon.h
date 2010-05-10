@@ -12,6 +12,8 @@ typedef enum TextEncode{
 	ttcUtf8
 }TEXTENCODE_t;
 
+#define INIT_PTR(ptr) ptr = NULL
+#define DEL_PTR(ptr) if((ptr)) {delete (ptr); (ptr) = NULL;} 
 #define LOADIMAGE(nID)	ImagingHelper::GetImageObject(ImgresHandle,nID)
 #define LOADSTRING(uID)	MzLoadString(uID,LangresHandle)
 #define MZFC_WM_MESSAGE_QUIT	MZFC_WM_MESSAGE+0x100

@@ -315,14 +315,14 @@ const wchar_t* WeekDayNameEN[] = {
 Ui_TodayWnd::Ui_TodayWnd(void)
 {
     DateTime::getDate(&_year,&_month,&_day);
-    m_pBigDay = NULL;
-    m_pFestDetail = NULL;
+    INIT_PTR(m_pBigDay);
+    INIT_PTR(m_pFestDetail);
 }
 
 Ui_TodayWnd::~Ui_TodayWnd(void)
 {
-    if(m_pBigDay) delete m_pBigDay;
-    if(m_pFestDetail) delete m_pFestDetail;
+    DEL_PTR(m_pBigDay);
+    DEL_PTR(m_pFestDetail);
 }
 
 BOOL Ui_TodayWnd::OnInitDialog() {
