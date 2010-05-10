@@ -359,9 +359,9 @@ void Ui_FestivalEdit::OnMzCommand(WPARAM wParam, LPARAM lParam){
                         setDateDlg.m_InitData.iItem3Data = m_temp.day - 1;
                     }
 
-                    setDateDlg.m_InitData.sItem1 = L"年";
-                    setDateDlg.m_InitData.sItem2 = L"月";
-                    setDateDlg.m_InitData.sItem3 = L"日";
+                    //setDateDlg.m_InitData.sItem1 = L"年";
+                    //setDateDlg.m_InitData.sItem2 = L"月";
+                    //setDateDlg.m_InitData.sItem3 = L"日";
                     setDateDlg.EnableDisplayYearData(true);
                     if(items == 3){
                         setDateDlg.m_InitData.iItem1Width = setDateDlg.m_InitData.iItem2Width = setDateDlg.m_InitData.iItem3Width = 140;
