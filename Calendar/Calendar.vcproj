@@ -248,6 +248,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\UiFestivalInfo.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\UiImage.cpp"
 				>
 			</File>
@@ -303,6 +307,10 @@
 			</File>
 			<File
 				RelativePath=".\ui_today_da.h"
+				>
+			</File>
+			<File
+				RelativePath=".\UiFestivalInfo.h"
 				>
 			</File>
 			<File

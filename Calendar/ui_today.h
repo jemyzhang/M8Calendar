@@ -5,6 +5,9 @@
 #include <lcal.h>
 #include "UiImage.h"
 
+class UiScrollDay;
+class UiFestivalInfo;
+
 class UiTitleBar  : public UiStatic{
 public:
     void OnPaint(HDC hdcDst, RECT* prcWin, RECT* prcUpdate){
@@ -20,10 +23,11 @@ class Ui_TodayWnd : public CMzWndEx
 public:
 	Ui_TodayWnd(void);
 	~Ui_TodayWnd(void);
+    virtual void OnTimer(UINT_PTR nIDEvent);
 public:
     UiToolBarPro m_Toolbar;
 	UiTitleBar m_YearMonth;
-	UiStatic m_BigDay;
+	UiScrollDay *m_pBigDay;
 	UiStatic m_GanZhiYear;	//干支年
 	UiStatic m_LunarMonthDay;	//农历月日
 	UiStatic m_GanZhiMonth;	//干支月日
@@ -32,11 +36,11 @@ public:
     UiStatic m_Celi1;    //纪念日
     UiStatic m_Celi2;    //纪念日
     UiStatic m_Jieqi;    //节气
-    UiStatic m_Yi;    //宜
-    UiStatic m_Ji;    //忌
+    UiFestivalInfo *m_pFestDetail;
+    //UiStatic m_Yi;    //宜
+    //UiStatic m_Ji;    //忌
     UiImage m_Header;
     UiImage m_Spliter;
-    UiImage m_Spliter_h;
 private:
     void updateUi();
 protected:
@@ -45,6 +49,8 @@ protected:
 
     // override the MZFC command handler
     virtual void OnMzCommand(WPARAM wParam, LPARAM lParam);
+
+    virtual LRESULT MzDefWndProc(UINT message, WPARAM wParam, LPARAM lParam);
 private:
 	int _year, _month, _day;
 };

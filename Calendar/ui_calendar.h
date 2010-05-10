@@ -3,7 +3,6 @@
 // include the MZFC library header file
 #include <mzfc_inc.h>
 #include <lcal.h>
-#include "UiImage.h"
 
 #define GRID_USE_UILIST 0
 
@@ -11,6 +10,7 @@ class UiYiJiLabel;
 class UiGrid;
 class UiWeekBar;
 class UiFestivalInfo;
+class UiZodiacImage;
 
 #define CALENDAR_USE_GRID 1
 
@@ -28,7 +28,7 @@ public:
 	UiGrid *m_pCalendar;
 	UiStatic m_LunarMD;	//农历月日
 	UiStatic m_GanZhiYMD;	//干支年月日
-	UiImage m_ZodiacImage;
+	UiZodiacImage *m_pZodiacImage;
 	UiYiJiLabel *m_pTipyiji;
     MzGridMenu m_GridMenu;
     ImageContainer m_imgContainer;
