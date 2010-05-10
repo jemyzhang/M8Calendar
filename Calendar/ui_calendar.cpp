@@ -911,6 +911,7 @@ void Ui_CalendarWnd::OnMzCommand(WPARAM wParam, LPARAM lParam) {
                     wsprintf(msgstr,L"从%d年%d月%d日\n至%d年%d月%d日\n相隔：%d 天",f.year,f.month,f.day,
                         t.year,t.month,t.day,ot - of);
                     MzCloseSip();
+                    DateTime::waitms(1);
                     MzMessageBoxEx(m_hWnd,msgstr,L"计算相隔时间");
                 }else{
                     MzCloseSip();
@@ -919,7 +920,6 @@ void Ui_CalendarWnd::OnMzCommand(WPARAM wParam, LPARAM lParam) {
             }
         case IDC_PPM_HISTORY:
             {
-                SetWindowText(L"历史上的今天");
                 UI_HistoryWnd dlg;
                 RECT rcWork = MzGetWorkArea();
                 dlg.setupdate(_month,_day);
@@ -935,7 +935,6 @@ void Ui_CalendarWnd::OnMzCommand(WPARAM wParam, LPARAM lParam) {
         default:
             break;
     }
-    SetWindowText(L"掌上农历");
 }
 void Ui_CalendarWnd::showTip(bool bshow){
 	//

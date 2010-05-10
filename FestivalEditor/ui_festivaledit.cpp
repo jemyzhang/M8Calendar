@@ -83,6 +83,7 @@ BOOL Ui_FestivalEdit::OnInitDialog(){
         m_edtName.SetLeftInvalid(80);
         m_edtName.SetTip2(L"Ãû³Æ");
         m_edtName.SetID(MZ_IDC_EDIT_NAME);
+        m_edtName.SetSipMode(IM_SIP_MODE_GEL_PY);
         m_edtName.SetMaxChars(6);
         AddUiWin(&m_edtName);
 
@@ -93,6 +94,7 @@ BOOL Ui_FestivalEdit::OnInitDialog(){
         m_edtDetail.SetID(MZ_IDC_EDIT_DETAIL);
         m_edtDetail.SetMaxChars(40);
         m_edtDetail.SetTextSize(20);
+        m_edtDetail.SetSipMode(IM_SIP_MODE_GEL_PY);
         AddUiWin(&m_edtDetail);
 
         y += LINE_HEIGHT + 15;
