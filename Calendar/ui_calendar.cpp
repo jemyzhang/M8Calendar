@@ -98,7 +98,7 @@ public:
 		MzDrawGridDlgBG(hdcDst,prcWin);
 
 		HFONT hf = FontHelper::GetFont( 30 );
-		SelectObject( hdcDst , hf );
+		HFONT oldfont = (HFONT)SelectObject( hdcDst , hf );
 
 		RECT rect;
 		int height = prcWin->bottom - prcWin->top - 20;
@@ -115,10 +115,10 @@ public:
 		rect.bottom = prcWin->bottom - 10;
 		::SetTextColor( hdcDst, RGB(255,64,64));
 		MzDrawText( hdcDst, L"忌", &rect, DT_LEFT|DT_SINGLELINE|DT_VCENTER|DT_END_ELLIPSIS );
-		DeleteObject( hf );
+        SelectObject(hdcDst,oldfont);//恢复系统字体
 
 		hf = FontHelper::GetFont( 20 );
-		SelectObject( hdcDst , hf );
+		oldfont = (HFONT)SelectObject( hdcDst , hf );
 
 		if(_isTs){
 			rect.top = prcWin->top;
@@ -140,7 +140,7 @@ public:
 			rect.bottom = prcWin->bottom - 10;
 			MzDrawText( hdcDst, jiText.C_Str(), &rect, DT_LEFT|DT_SINGLELINE|DT_VCENTER|DT_END_ELLIPSIS );
 		}
-		DeleteObject( hf );
+        SelectObject(hdcDst,oldfont);//恢复系统字体
 	}
 	void setText(wchar_t* yi, wchar_t* ji,bool ts = false){
 		_isTs = ts;
@@ -173,11 +173,13 @@ public:
         _isAutosize = false;
 		
 		imgToday = m_imgContainer.LoadImage(GetMzResV2ModuleHandle(), MZRESV2_IDR_PNG_WHEEL_SELECT, true);
+        pBitmap = NULL;
+        pMemDC = NULL;
     }
     ~UiGrid(void){
         setGridSize(0,0);	//release 
-        if(pMemDC) ReleaseDC(GetParentWnd(),pMemDC);
         if(pBitmap) DeleteObject(pBitmap);
+        if(pMemDC) DeleteDC(pMemDC);
     }
 	virtual void PaintWin(HDC hdcDst, RECT* prcWin, RECT* prcUpdate);
 public:
@@ -253,6 +255,8 @@ public:
         UiWin::SetPos(x,y,w,h,flags);
         m_nMaxX = w;
         m_nMaxY = h;
+        if(pBitmap) DeleteObject(pBitmap);
+        if(pMemDC) DeleteDC(pMemDC);
         pMemDC = CreateCompatibleDC(GetDC(GetParentWnd()));
         pBitmap = CreateCompatibleBitmap(GetDC(GetParentWnd()),m_nMaxX,m_nMaxY);
     }
@@ -393,7 +397,7 @@ int UiGrid::getTextSize(int row,int col){
 
 void UiGrid::PaintWin(HDC hdcDst, RECT* prcWin, RECT* prcUpdate){
 	UiWin::PaintWin(hdcDst,prcWin,prcUpdate);
-    SelectObject(pMemDC, pBitmap);
+    HGDIOBJ hOldBuf = SelectObject(pMemDC, pBitmap);
     HBRUSH myBrush = CreateSolidBrush(RGB(255-16,255-16,255-16));
     RECT rect;
     rect.top = 0;
@@ -407,6 +411,7 @@ void UiGrid::PaintWin(HDC hdcDst, RECT* prcWin, RECT* prcUpdate){
     //无数据
     if(_rows <= 0 || _cols <= 0){
         BitBlt(hdcDst,0,0,m_nMaxX,m_nMaxY,pMemDC,0,0,SRCCOPY);
+        SelectObject(pMemDC,hOldBuf);//恢复系统缓存
         return;
     }
     int _gridw = _gwidth;
@@ -449,15 +454,17 @@ void UiGrid::PaintWin(HDC hdcDst, RECT* prcWin, RECT* prcUpdate){
 				::SetTextColor(pMemDC,_grids[i][j].textColor);
 			}
             //text
-            SelectObject(pMemDC,font);
+            HFONT oldfont = (HFONT)SelectObject(pMemDC,font);
             MzDrawText( pMemDC,_grids[i][j].text.C_Str(), &textrect, DT_CENTER|DT_VCENTER );
+            SelectObject(pMemDC,oldfont);//恢复系统字体
 
             //text1
             font = FontHelper::GetFont(_grids[i][j].text1Size);
-            SelectObject(pMemDC,font);
+            oldfont = (HFONT)SelectObject(pMemDC,font);
             ::SetTextColor(pMemDC,_grids[i][j].text1Color);
             RECT text1rect = {rect.left+1,rect.top + 35,rect.right - 2,rect.bottom - 2};
             MzDrawText( pMemDC,_grids[i][j].text1.C_Str(), &text1rect, DT_CENTER|DT_VCENTER );
+            SelectObject(pMemDC,oldfont);//恢复系统字体
             //sign rect
             //计算bit位数
             //UCHAR bits = 0;
@@ -498,8 +505,9 @@ void UiGrid::PaintWin(HDC hdcDst, RECT* prcWin, RECT* prcUpdate){
 			}
 		}
     }
-    SelectObject(pMemDC,poldpen);
 	BitBlt(hdcDst,prcWin->left,prcWin->top,m_nMaxX,m_nMaxY,pMemDC,0,0,SRCCOPY);
+    SelectObject(pMemDC,poldpen); //恢复系统笔
+    SelectObject(pMemDC, hOldBuf);//恢复系统缓存
 }
 
 //////

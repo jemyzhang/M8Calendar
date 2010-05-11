@@ -263,43 +263,52 @@ void Ui_TodayDAWnd::PaintClock(HDC hdc, int x0, int y0, int r){
 	//绘制秒针
 	int szSec = 2;
 	HBRUSH brush = CreateSolidBrush(colorSec);
-	SelectObject(hdc,brush);
+	HBRUSH oldbrush = (HBRUSH)SelectObject(hdc,brush);
 	HPEN pen = CreatePen(PS_SOLID, szSec,colorSec);
-	SelectObject(hdc,pen);
+	HPEN oldpen = (HPEN)SelectObject(hdc,pen);
 	::MoveToEx(hdc,x0 - xsinSec / 3,y0 + ycosSec / 3,NULL);
 	::LineTo(hdc,x0 + xsinSec,y0 - ycosSec);
+    SelectObject(hdc,oldbrush);//恢复系统刷
+    SelectObject(hdc,oldpen);//恢复系统笔
 	::DeleteObject(pen);
 	::DeleteObject(brush);
 
 	//绘制分针
 	int szMin = 4;
 	brush = CreateSolidBrush(colorMin);
-	SelectObject(hdc,brush);
+	oldbrush = (HBRUSH)SelectObject(hdc,brush);
 	pen = CreatePen(PS_SOLID, szMin,colorMin);
-	SelectObject(hdc,pen);
+	oldpen = (HPEN)SelectObject(hdc,pen);
 	::MoveToEx(hdc,x0 - xsinMin / 3,y0 + ycosMin / 3,NULL);
 	::LineTo(hdc,x0 + xsinMin,y0 - ycosMin);
+    SelectObject(hdc,oldbrush);//恢复系统刷
+    SelectObject(hdc,oldpen);//恢复系统笔
 	::DeleteObject(pen);
 	::DeleteObject(brush);
 
 	//绘制时针
 	int szHour = 6;
 	brush = CreateSolidBrush(colorHour);
-	SelectObject(hdc,brush);
+	oldbrush = (HBRUSH)SelectObject(hdc,brush);
 	pen = CreatePen(PS_SOLID, szHour,colorHour);
-	SelectObject(hdc,pen);
+	oldpen = (HPEN)SelectObject(hdc,pen);
 	::MoveToEx(hdc,x0 - xsinHour / 3,y0 + ycosHour / 3,NULL);
 	::LineTo(hdc,x0 + xsinHour,y0 - ycosHour);
+    SelectObject(hdc,oldbrush);//恢复系统刷
+    SelectObject(hdc,oldpen);//恢复系统笔
 	::DeleteObject(pen);
 	::DeleteObject(brush);
 
 	//绘制节点
 	brush = CreateSolidBrush(colorRound);
-	SelectObject(hdc,brush);
+	oldbrush = (HBRUSH)SelectObject(hdc,brush);
 	pen = CreatePen(PS_SOLID, 0,colorRound);
-	SelectObject(hdc,pen);
+	oldpen = (HPEN)SelectObject(hdc,pen);
 	::Ellipse(hdc,x0 - 3,y0 - 3,x0 + 3,y0 + 3);
+    SelectObject(hdc,oldbrush);//恢复系统刷
+    SelectObject(hdc,oldpen);//恢复系统笔
 	::DeleteObject(brush);
+	::DeleteObject(pen);
 }
 
 void UiBackGround::PaintWin(HDC hdcDst, RECT* prcWin, RECT* prcUpdate){

@@ -165,10 +165,11 @@ public:
     virtual void PaintWin(HDC hdcDst, RECT* prcWin, RECT* prcUpdate){
 		::SetBkMode(hdcDst,TRANSPARENT);
 		HFONT font = FontHelper::GetFont(GetTextSize(),GetTextWeight());
-		SelectObject(hdcDst,font);
+		HFONT oldfont = (HFONT)SelectObject(hdcDst,font);
 
 		::SetTextColor(hdcDst,GetTextColor());
 		DrawText(hdcDst,GetText().C_Str(),GetText().Length(),prcWin,GetDrawTextFormat());
+        SelectObject(hdcDst,oldfont); //恢复系统字体
 	}
 #endif
     virtual void SetText(LPCTSTR text){
@@ -232,14 +233,15 @@ public:
                 swprintf(strval,L"%d",_day);
                 DrawText(pMemDC,strval,lstrlen(strval),&rcDraw,GetDrawTextFormat());
 #else
-			::SetBkMode(hdcDst,TRANSPARENT);
-            HFONT font = FontHelper::GetFont(GetTextSize(),GetTextWeight());
-            SelectObject(hdcDst,font);
+                ::SetBkMode(hdcDst,TRANSPARENT);
+                HFONT font = FontHelper::GetFont(GetTextSize(),GetTextWeight());
+                HFONT oldfont = (HFONT)SelectObject(hdcDst,font);
 
-            ::SetTextColor(hdcDst,GetTextColor());
-            wchar_t strval[10] = {0};
-            swprintf(strval,L"%d",_day);
-            DrawText(hdcDst,strval,lstrlen(strval),prcWin,GetDrawTextFormat());
+                ::SetTextColor(hdcDst,GetTextColor());
+                wchar_t strval[10] = {0};
+                swprintf(strval,L"%d",_day);
+                DrawText(hdcDst,strval,lstrlen(strval),prcWin,GetDrawTextFormat());
+                SelectObject(hdcDst,oldfont);//恢复系统字体
 #endif
             }else{
 #if USE_MEMDC
@@ -259,7 +261,7 @@ public:
                 SetBkMode(pScrollDC,TRANSPARENT);
 
                 HFONT font = FontHelper::GetFont(GetTextSize(),GetTextWeight());
-                SelectObject(pScrollDC,font);
+                HFONT oldfont = (HFONT)SelectObject(pScrollDC,font);
                 ::SetTextColor(pScrollDC,RGB(128,128,128));
 
                 rcScroll.bottom = pcfg->H.Get();
@@ -285,8 +287,8 @@ public:
 				::TransparentBlt(hdcDst,prcWin->left,prcWin->top,RECT_WIDTH(*prcWin),RECT_HEIGHT(*prcWin),
                     pScrollDC,0,offset,RECT_WIDTH(*prcWin),RECT_HEIGHT(*prcWin),RGB(255-64,255-64,255-64));
 #endif
-
-                SelectObject(pScrollDC, hOldBitmap);
+                SelectObject(hdcDst,oldfont);//恢复系统字体
+                SelectObject(pScrollDC, hOldBitmap);//恢复系统缓存
                 ::DeleteObject(pScrollBitmap);
                 ::DeleteDC(pScrollDC);
             }
@@ -562,11 +564,11 @@ protected:
         textrect.left = prcWin->left + 2;
         textrect.right = prcWin->left + GetWidth() - 2;
         HFONT font = FontHelper::GetFont(GetHeight()/2);
-        SelectObject(hdcDst,font);
+        HFONT oldfont = (HFONT)SelectObject(hdcDst,font);
         wchar_t strval[10] = {0};
         swprintf(strval,L"%d",n);
         DrawText(hdcDst,strval,lstrlen(strval),&textrect,DT_RIGHT|DT_TOP);
-        DeleteObject(font);
+        SelectObject(hdcDst,oldfont);//恢复系统字体
     }
 public:
     bool isContain(int xPos, int yPos){

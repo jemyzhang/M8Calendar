@@ -47,22 +47,24 @@ public:
         if(!scrolling){
             ::SetBkMode(hdcDst,TRANSPARENT);
             HFONT font = FontHelper::GetFont(GetTextSize(),GetTextWeight());
-            SelectObject(hdcDst,font);
+            HFONT oldfont = (HFONT)SelectObject(hdcDst,font);
 
             ::SetTextColor(hdcDst,GetTextColor());
             DrawText(hdcDst,GetText().C_Str(),GetText().Length(),prcWin,GetDrawTextFormat());
+            SelectObject(hdcDst,oldfont);//恢复系统字体
             return;
         }
 
         if(scrollend){
             ::SetBkMode(hdcDst,TRANSPARENT);
             HFONT font = FontHelper::GetFont(GetTextSize(),GetTextWeight());
-            SelectObject(hdcDst,font);
+            HFONT oldfont = (HFONT)SelectObject(hdcDst,font);
 
             ::SetTextColor(hdcDst,GetTextColor());
             wchar_t strval[10] = {0};
             swprintf(strval,L"%d",_day);
             DrawText(hdcDst,strval,lstrlen(strval),prcWin,GetDrawTextFormat());
+            SelectObject(hdcDst,oldfont);//恢复系统字体
         }else{
             HDC pScrollDC = CreateCompatibleDC(hdcDst);
             HBITMAP pScrollBitmap = CreateCompatibleBitmap(hdcDst,w,h * 2);
@@ -76,7 +78,7 @@ public:
             SetBkMode(pScrollDC,TRANSPARENT);
 
             HFONT font = FontHelper::GetFont(GetTextSize(),GetTextWeight());
-            SelectObject(pScrollDC,font);
+            HFONT oldfont = (HFONT)SelectObject(pScrollDC,font);
             ::SetTextColor(pScrollDC,RGB(128,128,128));
 
             rcScroll.bottom = h;
@@ -98,7 +100,8 @@ public:
             ::TransparentBlt(hdcDst,prcWin->left,prcWin->top,RECT_WIDTH(*prcWin),RECT_HEIGHT(*prcWin),
                 pScrollDC,0,offset,RECT_WIDTH(*prcWin),RECT_HEIGHT(*prcWin),RGB(255-64,255-64,255-64));
 
-            SelectObject(pScrollDC, hOldBitmap);
+            SelectObject(hdcDst,oldfont);//恢复系统字体
+            SelectObject(pScrollDC, hOldBitmap); //恢复系统BITMAP
             ::DeleteObject(pScrollBitmap);
             ::DeleteDC(pScrollDC);
         }

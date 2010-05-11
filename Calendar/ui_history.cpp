@@ -214,19 +214,19 @@ void UiHistoryList::DrawItem(HDC hdcDst, int nIndex, RECT* prcItem, RECT *prcWin
 	//年份
 	COLORREF cr = RGB(128,128,128);
 	HFONT hf = FontHelper::GetFont( 18 );
-	SelectObject(hdcDst,hf);
+	HFONT oldfont = (HFONT)SelectObject(hdcDst,hf);
 	RectYear.top = rcText.top; RectYear.bottom = rcText.top + (rcText.bottom - rcText.top)/2;
 	RectYear.left = rcText.left;RectYear.right = rcText.left + 80;
 	wchar_t *strYear = new wchar_t[16];
 	wsprintf(strYear,L"[%d年] ",ph->year);
 	MzDrawText( hdcDst , strYear, &RectYear , DT_LEFT|DT_SINGLELINE|DT_VCENTER|DT_END_ELLIPSIS );
-	DeleteObject( hf );
+    SelectObject(hdcDst,oldfont);//恢复系统字体
 
 	//标题
 	cr = RGB(0,0,0);       
 	::SetTextColor( hdcDst , cr );
 	hf = FontHelper::GetFont( 25 );
-	SelectObject(hdcDst,hf);
+	oldfont = (HFONT)SelectObject(hdcDst,hf);
 	Rect01.top = rcText.top; Rect01.bottom = Rect01.top + (rcText.bottom - rcText.top)/2;
 	Rect01.left = rcText.left + 80;
 	if(bBtnShow){
@@ -235,12 +235,12 @@ void UiHistoryList::DrawItem(HDC hdcDst, int nIndex, RECT* prcItem, RECT *prcWin
 		Rect01.right = rcText.right;
 	}
 	MzDrawText( hdcDst , ph->title, &Rect01 , DT_LEFT|DT_SINGLELINE|DT_VCENTER|DT_END_ELLIPSIS );
-	DeleteObject( hf );
+    SelectObject(hdcDst,oldfont);//恢复系统字体
 
 	//内容
 	cr = RGB(0,0,0);
 	hf = FontHelper::GetFont( 18 );
-	SelectObject(hdcDst,hf);
+	oldfont = (HFONT)SelectObject(hdcDst,hf);
 	Rect02.top = Rect01.bottom; Rect02.bottom = rcText.bottom;
 	Rect02.left = rcText.left;
 	if(bBtnShow){
@@ -249,7 +249,7 @@ void UiHistoryList::DrawItem(HDC hdcDst, int nIndex, RECT* prcItem, RECT *prcWin
 		Rect02.right = rcText.right;
 	}
 	MzDrawText( hdcDst , ph->content, &Rect02 , DT_LEFT|DT_SINGLELINE|DT_VCENTER|DT_END_ELLIPSIS );
-	DeleteObject( hf );
+    SelectObject(hdcDst,oldfont);//恢复系统字体
 }
 
 LRESULT UI_HistoryWnd::MzDefWndProc(UINT message, WPARAM wParam, LPARAM lParam) {
