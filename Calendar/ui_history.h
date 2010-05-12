@@ -3,22 +3,14 @@
 // include the MZFC library header file
 #include <mzfc_inc.h>
 
-class UiHistoryList : public UiList{
-public:
-	UiHistoryList() { _btn = 0;}
-public:
-	void DrawItem(HDC hdcDst, int nIndex, RECT* prcItem, RECT *prcWin, RECT *prcUpdate);
-	void setupButton(UiButton *btn) { _btn = btn; AddChild(_btn);}
-private:
-	UiButton* _btn;
-};
-
+class UiHistoryList;
 // Popup window derived from CMzWndEx
 
 class UI_HistoryWnd : public CMzWndEx {
     MZ_DECLARE_DYNAMIC(UI_HistoryWnd);
 public:
 	UI_HistoryWnd();
+    ~UI_HistoryWnd();
 	void setupdate(DWORD month = -1,DWORD day = -1);
     void OnTimer(UINT nIDEvent);
 protected:
@@ -26,7 +18,7 @@ protected:
 	void setupDetailView(int);
 protected:
     UiToolBarPro m_Toolbar;
-	UiHistoryList m_ListHistory;
+	UiHistoryList *m_pListHistory;
 	UiButton m_BtnDetail;
     UiHeadingBar m_CaptionTitle;
 //detail view

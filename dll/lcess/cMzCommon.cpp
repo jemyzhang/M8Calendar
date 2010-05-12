@@ -292,9 +292,9 @@ TEXTENCODE_t cMzCommonFile::getTextCode(TCHAR* filename)
 wchar_t* cMzCommonFile::chr2wch(const char* buffer, wchar_t** wbuf)
 {
       size_t len = strlen(buffer); 
-      size_t wlen = MultiByteToWideChar(CP_ACP, 0, (const char*)buffer, int(len), NULL, 0); 
+      size_t wlen = MultiByteToWideChar(936, 0, (const char*)buffer, int(len), NULL, 0); 
       wchar_t *wBuf = new wchar_t[wlen + 1]; 
-      MultiByteToWideChar(CP_ACP, 0, (const char*)buffer, int(len), wBuf, int(wlen));
+      MultiByteToWideChar(936, 0, (const char*)buffer, int(len), wBuf, int(wlen));
 	  wBuf[wlen] = '\0';
 	  *wbuf = wBuf;
 	  return wBuf;
