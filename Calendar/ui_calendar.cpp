@@ -765,12 +765,17 @@ void Ui_CalendarWnd::updateGrid(){
                     m_pCalendar->setSignStatus(r,c,2);
                 }
                 pfestival->queryBirthday(l.month,l.day,true);
-                //农历生日记号
-                if(pfestival->BirthdaySize()){
-                    m_pCalendar->setSignStatus(r,c,0);
+                int bsz = pfestival->BirthdaySize();
+                for(int i = 0; i < bsz; i++){
+                    lpFestival pf = pfestival->Birthday(i);
+                    if(pf->detail && pf->info0.year <= l.year){
+                        //农历生日记号
+                        m_pCalendar->setSignStatus(r,c,0);
+                        break;
+                    }
                 }
-			}
-		}
+            }
+        }
         if(_lstm.LunarHoliday(holidayname)){
 			m_pCalendar->setText1(r,c,holidayname);
 			m_pCalendar->setText1Color(r,c,RGB(64,64,255));
@@ -785,8 +790,13 @@ void Ui_CalendarWnd::updateGrid(){
             }
             //公历生日记号
             pfestival->queryBirthday(s.month,s.day,false);
-            if(pfestival->BirthdaySize()){
-                m_pCalendar->setSignStatus(r,c,1);
+            int bsz = pfestival->BirthdaySize();
+            for(int i = 0; i < bsz; i++){
+                lpFestival pf = pfestival->Birthday(i);
+                if(pf->detail && pf->info0.year <= s.year){
+                    m_pCalendar->setSignStatus(r,c,1);
+                    break;
+                }
             }
 		}
 		if(_lstm.SolarHoliday(holidayname)){

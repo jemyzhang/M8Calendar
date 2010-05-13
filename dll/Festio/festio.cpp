@@ -203,6 +203,77 @@ lpFestival FestivalIO::Birthday(int idx){
 	return query_at(idx);
 }
 
+#include <lcal.h>
+bool FestivalIO::BirthdayInfo(const int idx, int &age, int &nextdays, int &livedays,
+                              DWORD year, DWORD month, DWORD day){
+    lpFestival pf = query_at(idx); //获取生日
+    if(pf == NULL) return false;
+    if(pf->type != FestivalLunarBirth &&
+        pf->type != FestivalSolarBirth){
+        return false;
+    }
+
+    SYSTEMTIME sysTime;
+    GetLocalTime(&sysTime); //获取当前时间
+    if(year == 0) year = sysTime.wYear;
+    if(month == 0) month = sysTime.wMonth;
+    if(day == 0) day = sysTime.wDay;
+    LCAL currtm(year,month,day);
+    LSDate currSolar = currtm.getSolarDate();
+
+    bool bLunar = false;
+    LSDate curr = currSolar;
+
+    if(pf->type == FestivalLunarBirth){
+        bLunar = true;
+        currtm.SolarToLunar();        //转换当前日期至农历
+        curr = currtm.getLunarDate();
+    }
+
+    age = curr.year - pf->info0.year + 1;
+    if(age == 1 && 
+        ((curr.month < pf->month) || (curr.month == pf->month && curr.day < pf->day))
+    ){
+        age = 0;
+    }
+
+    if(age > 0){
+        //计算距离下次生日的天数
+        LCAL next(year,pf->month,pf->day);
+        if(bLunar){
+            next.setLunarDate(year,pf->month,pf->day);
+        }
+        LSDate nextSolar = next.getSolarDate();
+        LSDate currSolar = currtm.getSolarDate();
+        nextdays = next.diffDate(nextSolar,currSolar);
+        if(nextdays < 0){
+            if(bLunar){
+                next.setLunarDate(year + 1,pf->month,pf->day);
+                nextSolar = next.getSolarDate();
+            }else{
+                nextSolar.year++;
+            }
+            nextdays = next.diffDate(nextSolar,currSolar);
+        }else if(nextdays > 365 + 40){
+            if(bLunar){
+                next.setLunarDate(year - 1,pf->month,pf->day);
+                nextSolar = next.getSolarDate();
+            }else{
+                nextSolar.year--;
+            }
+            nextdays = next.diffDate(nextSolar,currSolar);
+        }
+        //计算出生天数
+        LCAL birth(pf->info0.year,pf->month,pf->day);
+        if(bLunar){
+            birth.setLunarDate(pf->info0.year,pf->month,pf->day);
+        }
+        LSDate birthSolar = birth.getSolarDate();
+        livedays = next.diffDate(currSolar,birthSolar);
+    }
+    return true;
+}
+
 bool FestivalIO::queryReminder(DWORD weekday, DWORD day, ReminderType type){
 	return query(weekday,day,FestivalSolarRemind,type);
 }

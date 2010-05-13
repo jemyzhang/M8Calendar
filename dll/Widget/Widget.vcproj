@@ -18,8 +18,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|M8SDK (ARMV4I)"
-			OutputDirectory="$(SolutionDir)bin"
-			IntermediateDirectory="$(SolutionDir)obj\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)$(SolutionName)\bin"
+			IntermediateDirectory="$(SolutionDir)$(SolutionName)\obj\$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="1"
 			>
@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="$(SolutionDir)include"
+				AdditionalIncludeDirectories="$(SolutionDir)$(SolutionName)\include"
 				PreprocessorDefinitions="_DEBUG;_WIN32_WCE=$(CEVER);UNDER_CE;WINCE;DEBUG;_WINDOWS;_USRDLL;WidgetLunarCalendar_EXPORTS;$(ARCHFAM);$(_ARCHFAM_);_UNICODE;UNICODE"
 				MinimalRebuild="true"
 				RuntimeLibrary="1"
@@ -66,9 +66,9 @@
 				Name="VCLinkerTool"
 				AdditionalOptions=" /subsystem:windowsce,6.00"
 				AdditionalDependencies="mzfc.lib shellwidget.lib lcessd.lib lcald.lib festiod.lib"
-				OutputFile="$(SolutionDir)bin/WidgetLunarCalendard.dll"
+				OutputFile="$(SolutionDir)$(SolutionName)\bin/WidgetLunarCalendard.dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="$(SolutionDir)lib"
+				AdditionalLibraryDirectories="$(SolutionDir)$(SolutionName)\lib"
 				ModuleDefinitionFile="WidgetLunarCalendar.def"
 				DelayLoadDLLs="$(NOINHERIT)"
 				GenerateDebugInformation="true"
@@ -78,7 +78,7 @@
 				StackCommitSize="4096"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="$(SolutionDir)lib/WidgetLunarCalendard.lib"
+				ImportLibrary="$(SolutionDir)$(SolutionName)\lib/WidgetLunarCalendard.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -109,8 +109,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|M8SDK (ARMV4I)"
-			OutputDirectory="$(SolutionDir)bin"
-			IntermediateDirectory="$(SolutionDir)obj\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)$(SolutionName)\bin"
+			IntermediateDirectory="$(SolutionDir)$(SolutionName)\obj\$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="1"
 			>
@@ -133,7 +133,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="2"
-				AdditionalIncludeDirectories="$(SolutionDir)include"
+				AdditionalIncludeDirectories="$(SolutionDir)$(SolutionName)\include"
 				PreprocessorDefinitions="NDEBUG;_WIN32_WCE=$(CEVER);UNDER_CE;WINCE;_WINDOWS;_USRDLL;$(ARCHFAM);$(_ARCHFAM_);_UNICODE;UNICODE;COMMON_STATIC;LCAL_STATIC"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -156,9 +156,9 @@
 				Name="VCLinkerTool"
 				AdditionalOptions=" /subsystem:windowsce,6.00"
 				AdditionalDependencies="mzfc.lib shellwidget.lib lcess-static.lib lcal-static.lib festio-static.lib"
-				OutputFile="$(SolutionDir)bin/WidgetLunarCalendar.dll"
+				OutputFile="$(SolutionDir)$(SolutionName)\bin/WidgetLunarCalendar.dll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="$(SolutionDir)lib\static"
+				AdditionalLibraryDirectories="$(SolutionDir)$(SolutionName)\lib\static"
 				ModuleDefinitionFile="WidgetLunarCalendar.def"
 				DelayLoadDLLs="$(NOINHERIT)"
 				GenerateDebugInformation="true"
@@ -170,7 +170,7 @@
 				EnableCOMDATFolding="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="$(SolutionDir)lib/WidgetLunarCalendar.lib"
+				ImportLibrary="$(SolutionDir)$(SolutionName)\lib/WidgetLunarCalendar.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"

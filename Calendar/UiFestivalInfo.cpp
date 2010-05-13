@@ -78,17 +78,24 @@ void UiFestivalInfo::SetDate(DWORD y, DWORD m, DWORD d){
             LSDate l = _lstm.getLunarDate();
 
             //农历生日
-            pfestival->queryBirthday(_lstm.getLunarDate().month,_lstm.getLunarDate().day,true);
+            pfestival->query_all(FestivalLunarBirth);
             int bsz = pfestival->BirthdaySize();
+            int age,n,lv;
             for(int i = 0; i < bsz; i++){
                 lpFestival pf = pfestival->Birthday(i);
-                if(pf->detail && pf->info0.year <= y){
+                if(pf == NULL) continue;
+                if(!pfestival->BirthdayInfo(i,age,n,lv,y,m,d)) continue;
+                if(pf->detail && n <= 7 && n >= 0 && age > 0){
                     wchar_t msg[200] = {0};
-                    wsprintf(msg,pf->detail,y - pf->info0.year + 1);
+                    wsprintf(msg,pf->detail,age);
                     sfestinfo = L"[";
                     sfestinfo += pf->info1.name;
                     sfestinfo += L"] : ";
                     sfestinfo += msg;
+                    if(n != 0){
+                        wsprintf(msg, L"(+%d)",n);
+                        sfestinfo += msg;
+                    }
                     appendInfo(sfestinfo,0);
                 }
             }
@@ -115,17 +122,25 @@ void UiFestivalInfo::SetDate(DWORD y, DWORD m, DWORD d){
         }
         LSDate l = _lstm.getSolarDate();
 
-        pfestival->queryBirthday(_lstm.getSolarDate().month,_lstm.getSolarDate().day,false);
+        //公历生日
+        pfestival->query_all(FestivalSolarBirth);
         int bsz = pfestival->BirthdaySize();
+        int age,n,lv;
         for(int i = 0; i < bsz; i++){
             lpFestival pf = pfestival->Birthday(i);
-            if(pf->detail && pf->info0.year <= y){
+            if(pf == NULL) continue;
+            if(!pfestival->BirthdayInfo(i,age,n,lv,y,m,d)) continue;
+            if(pf->detail && n <= 7 && n >= 0 && age > 0){
                 wchar_t msg[200] = {0};
-                wsprintf(msg,pf->detail,y - pf->info0.year + 1);
+                wsprintf(msg,pf->detail,age);
                 sfestinfo = L"[";
                 sfestinfo += pf->info1.name;
                 sfestinfo += L"] : ";
                 sfestinfo += msg;
+                if(n != 0){
+                    wsprintf(msg, L"(+%d)",n);
+                    sfestinfo += msg;
+                }
                 appendInfo(sfestinfo,1);
             }
         }

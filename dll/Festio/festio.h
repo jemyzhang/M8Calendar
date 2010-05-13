@@ -99,7 +99,9 @@ public:
     //返回生日个数
 	bool queryBirthday(DWORD month, DWORD day, bool blunar);
     int BirthdaySize();
-    lpFestival Birthday(int idx);
+    lpFestival Birthday(const int idx);
+    bool BirthdayInfo(const int idx, int &age, int &nextdays, int &livedays, 
+        DWORD year = 0, DWORD month = 0, DWORD day = 0);
     //返回提醒
 	bool queryReminder(DWORD weekday, DWORD day, ReminderType type);
     int ReminderSize();

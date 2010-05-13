@@ -18,8 +18,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|M8SDK (ARMV4I)"
-			OutputDirectory="$(SolutionDir)bin\debug"
-			IntermediateDirectory="$(SolutionDir)obj\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)$(SolutionName)\bin\debug"
+			IntermediateDirectory="$(SolutionDir)$(SolutionName)\obj\$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="1"
 			>
@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="$(SolutionDir)include"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)$(SolutionName)\include&quot;"
 				PreprocessorDefinitions="_DEBUG;_WIN32_WCE=$(CEVER);UNDER_CE;WINCE;DEBUG;_WINDOWS;$(ARCHFAM);$(_ARCHFAM_);_UNICODE;UNICODE"
 				MinimalRebuild="true"
 				RuntimeLibrary="1"
@@ -70,7 +70,7 @@
 				AdditionalDependencies="mzfc.lib PlatformApi.lib lcess.lib lcal.lib histoday.lib festio.lib"
 				OutputFile="$(OutDir)/M8Calendar.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="$(SolutionDir)lib\debug"
+				AdditionalLibraryDirectories="$(SolutionDir)$(SolutionName)\lib\debug"
 				DelayLoadDLLs="$(NOINHERIT)"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/M8Calendar.pdb"
@@ -109,8 +109,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|M8SDK (ARMV4I)"
-			OutputDirectory="$(SolutionDir)bin"
-			IntermediateDirectory="$(SolutionDir)obj\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)$(SolutionName)\bin"
+			IntermediateDirectory="$(SolutionDir)$(SolutionName)\obj\$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="1"
 			>
@@ -134,7 +134,7 @@
 				ExecutionBucket="7"
 				Optimization="3"
 				FavorSizeOrSpeed="0"
-				AdditionalIncludeDirectories="$(SolutionDir)include"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)$(SolutionName)\include&quot;"
 				PreprocessorDefinitions="NDEBUG;_WIN32_WCE=$(CEVER);UNDER_CE;WINCE;_WINDOWS;$(ARCHFAM);$(_ARCHFAM_);_UNICODE;UNICODE"
 				StringPooling="false"
 				MinimalRebuild="false"
@@ -162,7 +162,7 @@
 				AdditionalDependencies="mzfc.lib PlatformApi.lib lcess.lib lcal.lib histoday.lib festio.lib"
 				OutputFile="$(OutDir)/M8Calendar.exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="$(SolutionDir)lib"
+				AdditionalLibraryDirectories="$(SolutionDir)$(SolutionName)\lib"
 				DelayLoadDLLs="$(NOINHERIT)"
 				GenerateDebugInformation="false"
 				ProgramDatabaseFile="$(OutDir)/M8Calendar.pdb"

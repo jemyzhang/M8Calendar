@@ -118,44 +118,33 @@ CMzString FestivalItemCollection::GetPostscript1(int nIndex){
 
 CMzString FestivalItemCollection::GetPostscript2(int nIndex){
 //
-	if(ftype == FestivalLunarBirth){
-        SYSTEMTIME sysTime;
-        GetLocalTime(&sysTime);
+    if(ftype == FestivalLunarBirth || ftype == FestivalSolarBirth){
+        int age,nextdays,livedays;
+        if(fio->BirthdayInfo(nIndex,age,nextdays,livedays)){
+            if(age > 0){
+                wchar_t dstr[16];
+                if(nextdays == 0){
+                    if(age == 1){
+                        wsprintf(dstr,L"诞生日");
+                    }else{
+                        wsprintf(dstr,L"%d周岁生日",age);
+                    }
+                }else{
+                   if(age == 1){
+                        wsprintf(dstr,L"诞生%d天",livedays);
+                    }else{
+                        wsprintf(dstr,L"%d岁(+%d)",age,nextdays);
+                    }
+                }
+                return dstr;
+            }else{
+                return L"未出生";
+            }
+        }
 
-		lpFestival pf = fio->query_at(nIndex);
-		LCAL lstm(sysTime.wYear);
-		lstm.setLunarDate(sysTime.wYear,pf->month,pf->day);
-		LSDate s1 = lstm.getSolarDate();
-		LSDate s2;
-		s2.year = sysTime.wYear; s2.month = sysTime.wMonth; s2.day = sysTime.wDay;
-		if(s1.month < s2.month || (s1.month == s2.month && s1.day < s2.day)){
-			lstm.setLunarDate(sysTime.wYear + 1,pf->month,pf->day);
-			s1 = lstm.getSolarDate();
-		}
-		int dd = lstm.diffDate(s1,s2);
-		WCHAR dstr[16];
-		wsprintf(dstr,L"%d岁(+%d)",s1.year - pf->info0.year + 1,dd);
-		return dstr;
-	}else if(ftype == FestivalSolarBirth){
-        SYSTEMTIME sysTime;
-        GetLocalTime(&sysTime);
-
-		lpFestival pf = fio->query_at(nIndex);
-		LSDate s1;
-		s1.year = sysTime.wYear; s1.month = pf->month; s1.day = pf->day;
-		LSDate s2;
-		s2.year = sysTime.wYear; s2.month = sysTime.wMonth; s2.day = sysTime.wDay;
-		if(s1.month < s2.month || (s1.month == s2.month && s1.day < s2.day)){
-			s1.year ++;
-		}
-		LCAL lstm(sysTime.wYear);
-		int dd = lstm.diffDate(s1,s2);
-		WCHAR dstr[16];
-		wsprintf(dstr,L"%d岁(+%d)",s1.year - pf->info0.year + 1,dd);
-		return dstr;
-	}else{
-		return L"";
-	}
+    }else{
+        return L"";
+    }
 }
 
 int FestivalItemCollection::GetItemCount(){

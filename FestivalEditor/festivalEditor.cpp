@@ -4,6 +4,8 @@
 #include "UiFestivalList.h"
 #include "ui_festivaledit.h"
 #include <UsbNotifyApi.h>
+#include <cMzCommon.h>
+using namespace cMzCommon;
 
 #define MZ_IDC_BUTTONBAR_MAIN	101
 #define MZ_IDC_BUTTONBAR_SUB	102
@@ -254,6 +256,12 @@ protected:
 			}
 		}
         switch(message){
+        case MZ_WM_ITEM_ONREMOVE:
+            {
+                bChanged = true;
+                UpdateToolbar();
+            }
+            break;
         case MZ_WM_UILIST_LBUTTONUP_SELECT:
             if(wParam == MZ_IDC_FESTLIST){
                 int index = LOWORD(lParam);
@@ -326,6 +334,9 @@ protected:
                         f.info1.type = (ReminderType)(m_pButtonBar1->GetHighLightButton() + 1);
                     }else if(m_pButtonBar0->GetHighLightButton() == 0){
                         f.type = (FestivalType)(FestivalLunarBirth + m_pButtonBar1->GetHighLightButton());
+                        wchar_t dtl[16];
+                        wsprintf(dtl,L"今年%%d岁[%s]",f.type == FestivalLunarBirth ? L"农":L"公");
+                        C::newstrcpy(&f.detail,dtl);
                     }else if(m_pButtonBar0->GetHighLightButton() == 1){
                         f.type = (FestivalType)(FestivalLunar + m_pButtonBar1->GetHighLightButton());
                     }

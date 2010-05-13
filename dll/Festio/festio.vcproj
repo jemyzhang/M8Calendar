@@ -18,14 +18,14 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|M8SDK (ARMV4I)"
-			OutputDirectory="$(SolutionDir)bin\debug"
-			IntermediateDirectory="$(SolutionDir)obj\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)$(SolutionName)\bin\debug"
+			IntermediateDirectory="$(SolutionDir)$(SolutionName)\obj\$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="copy festio.h &quot;$(SolutionDir)include&quot;"
+				CommandLine="copy festio.h &quot;$(SolutionDir)$(SolutionName)\include&quot;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -43,7 +43,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="$(SolutionDir)include"
+				AdditionalIncludeDirectories="$(SolutionDir)$(SolutionName)\include"
 				PreprocessorDefinitions="_DEBUG;_WIN32_WCE=$(CEVER);UNDER_CE;WINCE;DEBUG;_WINDOWS;_USRDLL;$(ARCHFAM);$(_ARCHFAM_);_UNICODE;UNICODE;COMMON_EXPORTS"
 				MinimalRebuild="true"
 				RuntimeLibrary="1"
@@ -66,10 +66,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions=" /subsystem:windowsce,6.00"
-				AdditionalDependencies="mzfc.lib lcess.lib"
+				AdditionalDependencies="mzfc.lib lcess.lib lcal.lib"
 				OutputFile="$(OutDir)/festio.dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="$(SolutionDir)lib\debug"
+				AdditionalLibraryDirectories="$(SolutionDir)$(SolutionName)\lib\debug"
 				ModuleDefinitionFile="festio.def"
 				DelayLoadDLLs="$(NOINHERIT)"
 				GenerateDebugInformation="true"
@@ -79,7 +79,7 @@
 				StackCommitSize="4096"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="$(SolutionDir)lib/debug/festio.lib"
+				ImportLibrary="$(SolutionDir)$(SolutionName)\lib/debug/festio.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -110,14 +110,14 @@
 		</Configuration>
 		<Configuration
 			Name="Release|M8SDK (ARMV4I)"
-			OutputDirectory="$(SolutionDir)bin"
-			IntermediateDirectory="$(SolutionDir)obj\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)$(SolutionName)\bin"
+			IntermediateDirectory="$(SolutionDir)$(SolutionName)\obj\$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="copy festio.h &quot;$(SolutionDir)include&quot;"
+				CommandLine="copy festio.h &quot;$(SolutionDir)$(SolutionName)\include&quot;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -135,7 +135,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="2"
-				AdditionalIncludeDirectories="$(SolutionDir)include"
+				AdditionalIncludeDirectories="$(SolutionDir)$(SolutionName)\include"
 				PreprocessorDefinitions="NDEBUG;_WIN32_WCE=$(CEVER);UNDER_CE;WINCE;_WINDOWS;_USRDLL;$(ARCHFAM);$(_ARCHFAM_);_UNICODE;UNICODE;COMMON_EXPORTS"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -157,10 +157,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions=" /subsystem:windowsce,6.00"
-				AdditionalDependencies="mzfc.lib lcess.lib"
+				AdditionalDependencies="mzfc.lib lcess.lib lcal.lib"
 				OutputFile="$(OutDir)/festio.dll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="$(SolutionDir)lib"
+				AdditionalLibraryDirectories="$(SolutionDir)$(SolutionName)\lib"
 				ModuleDefinitionFile="festio.def"
 				DelayLoadDLLs="$(NOINHERIT)"
 				GenerateDebugInformation="true"
@@ -172,7 +172,7 @@
 				EnableCOMDATFolding="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="$(SolutionDir)lib/festio.lib"
+				ImportLibrary="$(SolutionDir)$(SolutionName)\lib/festio.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"

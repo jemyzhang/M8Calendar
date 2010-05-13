@@ -944,13 +944,29 @@ void UiWidget_Calendar::updateUi(){
 	if(pfestival){
 		if(m_pLunarBirth->isShow()){
 			if(!_lstm.isLunarLeapMonth()){
-				pfestival->queryBirthday(_lstm.getLunarDate().month,_lstm.getLunarDate().day,true);
-				m_pLunarBirth->SetPromoteNumber(pfestival->BirthdaySize());
+                pfestival->query_all(FestivalLunarBirth);
+                int bsz = pfestival->BirthdaySize();
+                int age,n,lv,nBirthday = 0;
+                for(int i = 0; i < bsz; i++){
+                    if(!pfestival->BirthdayInfo(i,age,n,lv,_year,_month,_day)) continue;
+                    if(n <= 7 && n >= 0 && age > 0){
+                        nBirthday ++;
+                    }
+                }
+				m_pLunarBirth->SetPromoteNumber(nBirthday);
 			}
 		}
 		if(m_pSolarBirth->isShow()){
-			pfestival->queryBirthday(_lstm.getSolarDate().month,_lstm.getSolarDate().day,false);
-			m_pSolarBirth->SetPromoteNumber(pfestival->BirthdaySize());
+            pfestival->query_all(FestivalSolarBirth);
+            int bsz = pfestival->BirthdaySize();
+            int age,n,lv,nBirthday = 0;
+            for(int i = 0; i < bsz; i++){
+                if(!pfestival->BirthdayInfo(i,age,n,lv,_year,_month,_day)) continue;
+                if(n <= 7 && n >= 0 && age > 0){
+                    nBirthday ++;
+                }
+            }
+            m_pSolarBirth->SetPromoteNumber(nBirthday);
 		}
 		if(m_pWeeklyReminder->isShow()){
 			pfestival->queryReminder(_lstm.getSolarDate().weekday,0,ReminderWeekly);
@@ -1160,16 +1176,28 @@ void UiWidget_Calendar::ShowDetail(FestivalType t, ReminderType rt){
 				if(pfestival){
 					_lstm.SolarToLunar();
 					if(!_lstm.isLunarLeapMonth()){
-						pfestival->queryBirthday(_lstm.getLunarDate().month,_lstm.getLunarDate().day,true);
-						int bsz = pfestival->BirthdaySize();
-						for(int i = 0; i < bsz; i++){
-							lpFestival p = pfestival->Birthday(i);
-							if(p->detail && p->info0.year <= _year){
-								wchar_t msg[200] = {0};
-								wsprintf(msg,p->detail,_year - p->info0.year + 1);
-								FestivalDetail.AppendMenuItem(MZV2_MID_MIN + i, msg);
-							}
-						}
+                        pfestival->query_all(FestivalLunarBirth);
+                        int bsz = pfestival->BirthdaySize();
+                        int age,n,lv;
+                        wstring sfestinfo;
+                        for(int i = 0; i < bsz; i++){
+                            lpFestival pf = pfestival->Birthday(i);
+                            if(pf == NULL) continue;
+                            if(!pfestival->BirthdayInfo(i,age,n,lv,_year,_month,_day)) continue;
+                            if(pf->detail && n <= 7 && n >= 0 && age > 0){
+                                wchar_t msg[200] = {0};
+                                wsprintf(msg,pf->detail,age);
+                                sfestinfo = L"[";
+                                sfestinfo += pf->info1.name;
+                                sfestinfo += L"] : ";
+                                sfestinfo += msg;
+                                if(n != 0){
+                                    wsprintf(msg, L"(+%d)",n);
+                                    sfestinfo += msg;
+                                }
+                                FestivalDetail.AppendMenuItem(MZV2_MID_MIN + i, sfestinfo.c_str());
+                            }
+                        }
 					}
 				}
             }
@@ -1178,16 +1206,28 @@ void UiWidget_Calendar::ShowDetail(FestivalType t, ReminderType rt){
             {
                 FestivalDetail.SetMenuTitle(L"公历生日");
 				if(pfestival){
-					pfestival->queryBirthday(_lstm.getSolarDate().month,_lstm.getSolarDate().day,false);
-					int bsz = pfestival->BirthdaySize();
-					for(int i = 0; i < bsz; i++){
-						lpFestival p = pfestival->Birthday(i);
-						if(p->detail && p->info0.year <= _year){
-							wchar_t msg[200] = {0};
-							wsprintf(msg,p->detail,_year - p->info0.year + 1);
-							FestivalDetail.AppendMenuItem(MZV2_MID_MIN + i, msg);
-						}
-					}
+                    pfestival->query_all(FestivalSolarBirth);
+                    int bsz = pfestival->BirthdaySize();
+                    int age,n,lv;
+                    wstring sfestinfo;
+                    for(int i = 0; i < bsz; i++){
+                        lpFestival pf = pfestival->Birthday(i);
+                        if(pf == NULL) continue;
+                        if(!pfestival->BirthdayInfo(i,age,n,lv,_year,_month,_day)) continue;
+                        if(pf->detail && n <= 7 && n >= 0 && age > 0){
+                            wchar_t msg[200] = {0};
+                            wsprintf(msg,pf->detail,age);
+                            sfestinfo = L"[";
+                            sfestinfo += pf->info1.name;
+                            sfestinfo += L"] : ";
+                            sfestinfo += msg;
+                            if(n != 0){
+                                wsprintf(msg, L"(+%d)",n);
+                                sfestinfo += msg;
+                            }
+                            FestivalDetail.AppendMenuItem(MZV2_MID_MIN + i, sfestinfo.c_str());
+                        }
+                    }
 				}
             }
             break;

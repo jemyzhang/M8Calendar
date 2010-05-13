@@ -18,8 +18,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|M8SDK (ARMV4I)"
-			OutputDirectory="$(SolutionDir)bin"
-			IntermediateDirectory="$(SolutionDir)obj\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)$(SolutionName)\bin\debug"
+			IntermediateDirectory="$(SolutionDir)$(SolutionName)\obj\$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="1"
 			>
@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="$(SolutionDir)include"
+				AdditionalIncludeDirectories="$(SolutionDir)$(SolutionName)\include"
 				PreprocessorDefinitions="_DEBUG;_WIN32_WCE=$(CEVER);UNDER_CE;WINCE;DEBUG;_WINDOWS;$(ARCHFAM);$(_ARCHFAM_);_UNICODE;UNICODE"
 				MinimalRebuild="true"
 				RuntimeLibrary="1"
@@ -68,7 +68,7 @@
 				AdditionalDependencies="mzfc.lib platformapi.lib  lcessd.lib festiod.lib  lcal.lib"
 				OutputFile="$(OutDir)/FestivalEditor.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="$(SolutionDir)lib"
+				AdditionalLibraryDirectories="$(SolutionDir)$(SolutionName)\lib"
 				DelayLoadDLLs="$(NOINHERIT)"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/FestivalEditor.pdb"
@@ -107,8 +107,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|M8SDK (ARMV4I)"
-			OutputDirectory="$(SolutionDir)bin"
-			IntermediateDirectory="$(SolutionDir)obj\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)$(SolutionName)\bin\"
+			IntermediateDirectory="$(SolutionDir)$(SolutionName)\obj\$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="1"
 			>
@@ -131,7 +131,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="2"
-				AdditionalIncludeDirectories="$(SolutionDir)include"
+				AdditionalIncludeDirectories="$(SolutionDir)$(SolutionName)\include"
 				PreprocessorDefinitions="NDEBUG;_WIN32_WCE=$(CEVER);UNDER_CE;WINCE;_WINDOWS;$(ARCHFAM);$(_ARCHFAM_);_UNICODE;UNICODE"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -156,7 +156,7 @@
 				AdditionalDependencies="mzfc.lib platformapi.lib lcess.lib festio.lib lcal.lib"
 				OutputFile="$(OutDir)/FestivalEditor.exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="$(SolutionDir)lib"
+				AdditionalLibraryDirectories="$(SolutionDir)$(SolutionName)\lib"
 				DelayLoadDLLs="$(NOINHERIT)"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/FestivalEditor.pdb"
