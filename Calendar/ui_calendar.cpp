@@ -126,7 +126,7 @@ public:
 			rect.left = prcWin->left + 60;
 			rect.right = prcWin->right;
 			::SetTextColor( hdcDst, RGB(255,64,255));
-			MzDrawText( hdcDst, tsText.C_Str(), &rect, DT_LEFT|DT_SINGLELINE|DT_VCENTER|DT_END_ELLIPSIS );
+			MzDrawText( hdcDst, tsText, &rect, DT_LEFT|DT_SINGLELINE|DT_VCENTER|DT_END_ELLIPSIS );
 		}else{
 			::SetTextColor( hdcDst, RGB(255,255,255));
 
@@ -134,15 +134,15 @@ public:
 			rect.bottom = rect.top + height / 2;
 			rect.left = prcWin->left + 60;
 			rect.right = prcWin->right;
-			MzDrawText( hdcDst, yiText.C_Str(), &rect, DT_LEFT|DT_SINGLELINE|DT_VCENTER|DT_END_ELLIPSIS );
+			MzDrawText( hdcDst, yiText, &rect, DT_LEFT|DT_SINGLELINE|DT_VCENTER|DT_END_ELLIPSIS );
 
 			rect.top = prcWin->top + height / 2;
 			rect.bottom = prcWin->bottom - 10;
-			MzDrawText( hdcDst, jiText.C_Str(), &rect, DT_LEFT|DT_SINGLELINE|DT_VCENTER|DT_END_ELLIPSIS );
+			MzDrawText( hdcDst, jiText, &rect, DT_LEFT|DT_SINGLELINE|DT_VCENTER|DT_END_ELLIPSIS );
 		}
         SelectObject(hdcDst,oldfont);//恢复系统字体
 	}
-	void setText(wchar_t* yi, wchar_t* ji,bool ts = false){
+	void setText(LPCTSTR yi, LPCTSTR ji,bool ts = false){
 		_isTs = ts;
 		if(!ts){
 			yiText = yi;
@@ -152,7 +152,7 @@ public:
 		}
 	}
 private:
-	CMzString yiText,jiText,tsText;
+	LPCTSTR yiText,jiText,tsText;
 	bool _isTs;	//特殊
 };
 
@@ -167,7 +167,7 @@ public:
         _seltxt = RGB(255,255,255);
         _rows = 1;
         _cols = 1;
-        setGridSize(_rows,_cols);
+        setGrids(_rows,_cols);
         _gwidth = CAL_ROW_WIDTH;
         _gheight = CAL_ROW_HEIGHT - 1;
         _isAutosize = false;
@@ -177,7 +177,7 @@ public:
         pMemDC = NULL;
     }
     ~UiGrid(void){
-        setGridSize(0,0);	//release 
+        setGrids(0,0);	//release 
         if(pBitmap) DeleteObject(pBitmap);
         if(pMemDC) DeleteDC(pMemDC);
     }
@@ -212,40 +212,21 @@ public:
         if(!checkRange(row,col)) return;
         if(ino > 7) return;
         if(status){
-            _grids[row][col].signs |= (1 << ino);
+            _grids[row * _cols + col].signs |= (1 << ino);
         }else{
-            _grids[row][col].signs &= ~(1 << ino);
+            _grids[row * _cols + col].signs &= ~(1 << ino);
         }
     }
 public:
     void setGrids(int nRow, int nCol){
         if(_grids){
-            for(int i = 0; i < _rows; i++){
-                for(int j = 0; j < _cols; j++){
-                    _grids[i][j].text.SetBufferSize(0);
-                }
-                delete _grids[i];
-            }
-            delete _grids;
+            delete [] _grids;
             _grids = 0;
         }
         _rows = nRow;
         _cols = nCol;
-        if(_rows >= 0 && _cols >= 0){
-            _grids = new GridAttr_ptr[_rows];
-            for(int i = 0; i < _rows; i++){
-                _grids[i] = new GridAttr_t[_cols];
-                for(int j = 0; j < _cols; j++){
-                    _grids[i][j].isSelected = false;
-                    _grids[i][j].text = 0;
-                    _grids[i][j].text1 = 0;
-                    _grids[i][j].signs = 0;
-                    _grids[i][j].textColor = RGB(0,0,0);
-                    _grids[i][j].text1Color = RGB(128,128,128);
-                    _grids[i][j].textSize = 28;
-                    _grids[i][j].text1Size = 17;
-                }
-            }
+        if(_rows > 0 && _cols > 0){
+            _grids = new GridAttr_t[_rows*_cols];
         }
     }
 	int getRowCount(void);
@@ -262,16 +243,30 @@ public:
     }
 private:
 	typedef struct GridAttr{
-		CMzString text;	//正中
-		CMzString text1;	//下一行
+		wchar_t* text;	//正中
+		wchar_t* text1;	//下一行
 		BYTE signs;	//记号 //最多8个
 		int textSize;
 		int text1Size;
 		COLORREF textColor;
 		COLORREF text1Color;
 		bool isSelected;
+        GridAttr(){
+            isSelected = false;
+            text = 0;
+            text1 = 0;
+            signs = 0;
+            textColor = RGB(0,0,0);
+            text1Color = RGB(128,128,128);
+            textSize = 28;
+            text1Size = 17;
+        }
+        ~GridAttr(){
+            DEL_PTR(text);
+            DEL_PTR(text1);
+        }
 	}GridAttr_t,*GridAttr_ptr;
-	GridAttr_ptr *_grids;
+	GridAttr_ptr _grids;
 private:
 	COLORREF _selbg, _seltxt;
 	int _rows,_cols;
@@ -299,9 +294,9 @@ void UiGrid::setSelectedIndex(int row,int col){
 	if(checkRange(row,col)){
 		int oldr, oldc;
 		if(getSelectedIndex(oldr,oldc)){
-			_grids[oldr][oldc].isSelected = false;
+			_grids[oldr * _cols + oldc].isSelected = false;
 		}
-		_grids[row][col].isSelected = true;
+		_grids[row * _cols + col].isSelected = true;
 	}
 }
 
@@ -324,7 +319,7 @@ bool UiGrid::getSelectedIndex(int &row, int &col){
 	bool ret = true;
 		for(int i = 0; i < _rows; i++){
 			for(int j = 0; j < _cols; j++){
-				if(_grids[i][j].isSelected){
+				if(_grids[i * _cols + j].isSelected){
 					row = i;
 					col = j;
 					return ret;
@@ -346,51 +341,51 @@ int UiGrid::getRowCount(){
 
 void UiGrid::setText(int row,int col, LPCTSTR text){
 	if(checkRange(row,col)){
-		_grids[row][col].text = text;
+        C::newstrcpy(&_grids[row * _cols + col].text, text);
 	}
 }
 
 void UiGrid::setText1(int row,int col, LPCTSTR text){
 	if(checkRange(row,col)){
-		_grids[row][col].text1 = text;
+        C::newstrcpy(&_grids[row * _cols + col].text1, text);
 	}
 }
 
 void UiGrid::setTextColor(int row,int col, COLORREF c){
 	if(checkRange(row,col)){
-		_grids[row][col].textColor = c;
+		_grids[row * _cols + col].textColor = c;
 	}
 }
 
 void UiGrid::setText1Color(int row,int col, COLORREF c){
 	if(checkRange(row,col)){
-		_grids[row][col].text1Color = c;
+		_grids[row * _cols + col].text1Color = c;
 	}
 }
 
 void UiGrid::setTextSize(int row,int col, int nSize){
 	if(checkRange(row,col)){
-		_grids[row][col].textSize = nSize;
+		_grids[row * _cols + col].textSize = nSize;
 	}
 }
 
 LPCTSTR UiGrid::getText(int row,int col){
 	if(checkRange(row,col)){
-		return _grids[row][col].text;
+		return _grids[row * _cols + col].text;
 	}
 	return 0;
 }
 
 COLORREF UiGrid::getTextColor(int row,int col){
 	if(checkRange(row,col)){
-		return _grids[row][col].textColor;
+		return _grids[row * _cols + col].textColor;
 	}
 	return RGB(0,0,0);
 }
 
 int UiGrid::getTextSize(int row,int col){
 	if(checkRange(row,col)){
-		return _grids[row][col].textSize;
+		return _grids[row * _cols + col].textSize;
 	}
 	return 0;
 }
@@ -445,41 +440,42 @@ void UiGrid::PaintWin(HDC hdcDst, RECT* prcWin, RECT* prcUpdate){
             RECT textrect = {rect.left + 1,rect.top + 1,rect.right - 2,rect.bottom - 20};
             HBRUSH bqbrush;
             HFONT font;
-            if(_grids[i][j].isSelected){	//selected
-                font = FontHelper::GetFont(_grids[i][j].textSize + 2);
+            int cidx = i * _cols + j;
+            if(_grids[cidx].isSelected){	//selected
+                font = FontHelper::GetFont(_grids[cidx].textSize + 2);
                 ::SetTextColor(pMemDC,_seltxt);
 				MzDrawSelectedBg_NoLine(pMemDC,&frect);
 			}else{
-                font = FontHelper::GetFont(_grids[i][j].textSize);
-				::SetTextColor(pMemDC,_grids[i][j].textColor);
+                font = FontHelper::GetFont(_grids[cidx].textSize);
+				::SetTextColor(pMemDC,_grids[cidx].textColor);
 			}
             //text
             HFONT oldfont = (HFONT)SelectObject(pMemDC,font);
-            MzDrawText( pMemDC,_grids[i][j].text.C_Str(), &textrect, DT_CENTER|DT_VCENTER );
+            MzDrawText( pMemDC,_grids[cidx].text, &textrect, DT_CENTER|DT_VCENTER );
             SelectObject(pMemDC,oldfont);//恢复系统字体
 
             //text1
-            font = FontHelper::GetFont(_grids[i][j].text1Size);
+            font = FontHelper::GetFont(_grids[cidx].text1Size);
             oldfont = (HFONT)SelectObject(pMemDC,font);
-            ::SetTextColor(pMemDC,_grids[i][j].text1Color);
+            ::SetTextColor(pMemDC,_grids[cidx].text1Color);
             RECT text1rect = {rect.left+1,rect.top + 35,rect.right - 2,rect.bottom - 2};
-            MzDrawText( pMemDC,_grids[i][j].text1.C_Str(), &text1rect, DT_CENTER|DT_VCENTER );
+            MzDrawText( pMemDC,_grids[cidx].text1, &text1rect, DT_CENTER|DT_VCENTER );
             SelectObject(pMemDC,oldfont);//恢复系统字体
             //sign rect
             //计算bit位数
             //UCHAR bits = 0;
-            //for(UCHAR signs = _grids[i][j].signs;
+            //for(UCHAR signs = _grids[cidx].signs;
             //    signs != 0; signs &= signs-1){
             //        bits ++;
             //}
             //if(bits > 0){
-            if(_grids[i][j].signs > 0){
+            if(_grids[cidx].signs > 0){
                 //绘制
 #define SIGN_WIDTH 6
 #define SIGN_HEIGHT 6
                 RECT signrect = {rect.left+5,rect.top + 5,rect.left + 5 + SIGN_WIDTH,rect.top + 5 + SIGN_HEIGHT};
                 UCHAR pos = 0;
-                for(UCHAR signs = _grids[i][j].signs;
+                for(UCHAR signs = _grids[cidx].signs;
                     signs != 0; signs >>= 1, pos++){
                         if(signs&0x1){
                             bqbrush = CreateSolidBrush(festival_colors[pos]);
@@ -493,7 +489,8 @@ void UiGrid::PaintWin(HDC hdcDst, RECT* prcWin, RECT* prcUpdate){
 		//draw today
 		for(int i = 0; i < _rows; i++){
 			for(int j = 0; j < _cols; j++){
-				if(_grids[i][j].textColor == RGB(192,64,64)){
+                int cidx = i * _cols + j;
+				if(_grids[cidx].textColor == RGB(192,64,64)){
 					RECT rectHL = {
 						_x + (_gridw - 1) * j - 8,
 						_y + (_gridh - 1) * i - 10,
@@ -537,6 +534,7 @@ Ui_CalendarWnd::~Ui_CalendarWnd(void)
     DEL_PTR(m_pTipyiji);
     DEL_PTR(m_pCalendar);
     DEL_PTR(m_pZodiacImage);
+    DEL_PTR(m_pWeekBar);
 }
 
 CMzString Ui_CalendarWnd::getDate(){
@@ -738,7 +736,7 @@ void Ui_CalendarWnd::updateGrid(){
 		wsprintf(datestr,L"%d",i+1);
 		m_pCalendar->setText(r,c,datestr);
 		_lstm.setDay(i + 1);
-		m_pCalendar->setText1(r,c,_lstm.LunarDay().C_Str());
+		m_pCalendar->setText1(r,c,_lstm.LunarDay());
 		if(t_year == _year && t_month == _month && t_day == i+1){
 			//设置今天颜色
 			m_pCalendar->setTextColor(r,c,RGB(192,64,64));
@@ -965,9 +963,9 @@ void Ui_CalendarWnd::showTip(bool bshow){
 
 		LCAL _lstm(_year,_month,_day);
 		_lstm.SolarToLunar();
-		CMzString yi,ji;
+		LPCTSTR yi,ji;
 		bool ret = _lstm.HuangliYiJi(yi,ji);
-		m_pTipyiji->setText(yi.C_Str(),ji.C_Str(),ret);
+		m_pTipyiji->setText(yi,ji,ret);
 		int row,col;
 		int maxrow = m_pCalendar->getRowCount();
 		m_pCalendar->getSelectedIndex(row,col);
@@ -1120,7 +1118,7 @@ void Ui_CalendarWnd::updateInfo(bool forceupdate){
 		_lstm.SolarToLunar();
 		_lstm.setLunarMonthGanZhiMode(_showMonthByJieqi);
 		unsigned char zodiac;
-		CMzString zodiacName = _lstm.Zodiac(&zodiac);
+		LPCTSTR zodiacName = _lstm.Zodiac(&zodiac);
 
 		//update zodiac image
         m_pZodiacImage->SetZodiac(zodiac);
@@ -1133,16 +1131,16 @@ void Ui_CalendarWnd::updateInfo(bool forceupdate){
 
 		//update ganzhi datetime
 		wsprintf(datestr,L"%s年 %s月 %s日",
-			_lstm.GanZhiYear().C_Str(),
-			_lstm.GanZhiMonth().C_Str(),
-			_lstm.GanZhiDay().C_Str());
+			_lstm.GanZhiYear(),
+			_lstm.GanZhiMonth(),
+			_lstm.GanZhiDay());
 		m_GanZhiYMD.SetText(datestr);
 		m_GanZhiYMD.Invalidate();
 		//update lunar datetime
 		wsprintf(datestr,L"农历%s%s日 %s年",
-			_lstm.LunarMonth().C_Str(),
-			_lstm.OriginalLunarDay().C_Str(),
-			zodiacName.C_Str());
+			_lstm.LunarMonth(),
+			_lstm.OriginalLunarDay(),
+			zodiacName);
 		m_LunarMD.SetText(datestr);
 		m_LunarMD.Invalidate();
 		y = _year;

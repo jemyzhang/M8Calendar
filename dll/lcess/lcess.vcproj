@@ -25,7 +25,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="copy sqlite3x\sqlite3x.hpp $(SolutionDir)$(SolutionName)\include&#x0D;&#x0A;copy cMzConfig.h $(SolutionDir)$(SolutionName)\include&#x0D;&#x0A;copy cMzCommon.h $(SolutionDir)$(SolutionName)\include&#x0D;&#x0A;"
+				CommandLine="copy sqlite3x\sqlite3x.hpp $(SolutionDir)$(SolutionName)\include&#x0D;&#x0A;copy cMzConfig.h $(SolutionDir)$(SolutionName)\include&#x0D;&#x0A;copy cMzCommon.h $(SolutionDir)$(SolutionName)\include"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"

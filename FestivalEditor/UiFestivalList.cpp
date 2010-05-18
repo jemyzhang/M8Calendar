@@ -24,7 +24,7 @@ FestivalItemCollection::FestivalItemCollection(){
 }
 
 FestivalItemCollection::~FestivalItemCollection(){
-    delete fio;
+    if(fio) delete fio;
 }
 
 void FestivalItemCollection::SetFestivalCollectionType(FestivalListType type){

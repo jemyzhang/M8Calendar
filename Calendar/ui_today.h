@@ -7,6 +7,7 @@
 
 class UiScrollDay;
 class UiFestivalInfo;
+class UiYijiInfo;
 
 class UiTitleBar  : public UiStatic{
 public:
@@ -37,6 +38,7 @@ public:
     UiStatic m_Celi2;    //纪念日
     UiStatic m_Jieqi;    //节气
     UiFestivalInfo *m_pFestDetail;
+    UiYijiInfo *m_pYiji;
     //UiStatic m_Yi;    //宜
     //UiStatic m_Ji;    //忌
     UiImage m_Header;

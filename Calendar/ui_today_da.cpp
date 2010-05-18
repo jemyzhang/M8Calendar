@@ -168,13 +168,13 @@ void Ui_TodayDAWnd::updateUi(){
     _lstm.SolarToLunar();
     
     wsprintf(wstmp,L"%s(%s)年",
-        _lstm.GanZhiYear().C_Str(),
-        _lstm.Zodiac().C_Str());
+        _lstm.GanZhiYear(),
+        _lstm.Zodiac());
     m_GanZhiYear.SetText(wstmp);
 
     wsprintf(wstmp,L"%s%s",
-        _lstm.LunarMonth().C_Str(),
-        _lstm.OriginalLunarDay().C_Str());
+        _lstm.LunarMonth(),
+        _lstm.OriginalLunarDay());
     m_LunarMonthDay.SetText(wstmp);
 
     wchar_t holidayname[20];
@@ -227,7 +227,7 @@ void Ui_TodayDAWnd::updateUi(){
     m_Jieqi.SetText(wstmp);
     
 
-    wsprintf(wstmp,L"%s月 %s日",_lstm.GanZhiMonth().C_Str(),_lstm.GanZhiDay().C_Str());
+    wsprintf(wstmp,L"%s月 %s日",_lstm.GanZhiMonth(),_lstm.GanZhiDay());
     m_GanZhiMonth.SetText(wstmp);
 
     Invalidate();

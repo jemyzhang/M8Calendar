@@ -18,14 +18,14 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|M8SDK (ARMV4I)"
-			OutputDirectory="$(SolutionDir)$(SolutionName)\bin"
-			IntermediateDirectory="$(SolutionDir)$(SolutionName)\obj\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)$(SolutionName)\lib\static"
+			IntermediateDirectory="$(SolutionDir)$(SolutionName)\obj\static\$(ConfigurationName)"
 			ConfigurationType="4"
 			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="copy festio.h &quot;$(SolutionDir)$(ProjectName)\include&quot;"
+				CommandLine="copy festio.h &quot;$(SolutionDir)$(SolutionName)\include&quot;&#x0D;&#x0A;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -44,7 +44,7 @@
 				ExecutionBucket="7"
 				Optimization="0"
 				AdditionalIncludeDirectories="$(SolutionDir)$(SolutionName)\include"
-				PreprocessorDefinitions="_DEBUG;_WIN32_WCE=$(CEVER);UNDER_CE;WINCE;DEBUG;_WINDOWS;_USRDLL;$(ARCHFAM);$(_ARCHFAM_);_UNICODE;UNICODE;COMMON_EXPORTS"
+				PreprocessorDefinitions="_DEBUG;_WIN32_WCE=$(CEVER);UNDER_CE;WINCE;DEBUG;_WINDOWS;_USRDLL;$(ARCHFAM);$(_ARCHFAM_);_UNICODE;UNICODE;COMMON_EXPORTS;COMMON_STATIC"
 				MinimalRebuild="true"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="0"
@@ -87,7 +87,7 @@
 			/>
 			<DeploymentTool
 				ForceDirty="-1"
-				RemoteDirectory="\temp\"
+				RemoteDirectory=""
 				RegisterOutput="0"
 				AdditionalFiles=""
 			/>
@@ -103,7 +103,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="copy festio.h &quot;$(SolutionDir)include&quot;"
+				CommandLine="copy festio.h &quot;$(SolutionDir)$(SolutionName)\include&quot;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -165,7 +165,7 @@
 			/>
 			<DeploymentTool
 				ForceDirty="-1"
-				RemoteDirectory="%CSIDL_PROGRAM_FILES%\M8Calendar"
+				RemoteDirectory=""
 				RegisterOutput="0"
 				AdditionalFiles=""
 			/>
@@ -183,10 +183,6 @@
 			>
 			<File
 				RelativePath=".\festio.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\festio.def"
 				>
 			</File>
 			<File

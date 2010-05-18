@@ -65,10 +65,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions=" /subsystem:windowsce,6.00"
-				AdditionalDependencies="mzfc.lib platformapi.lib  lcessd.lib festiod.lib  lcal.lib"
+				AdditionalDependencies="mzfc.lib platformapi.lib lcess.lib festio.lib lcal.lib"
 				OutputFile="$(OutDir)/FestivalEditor.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="$(SolutionDir)$(SolutionName)\lib"
+				AdditionalLibraryDirectories="$(SolutionDir)$(SolutionName)\lib\debug"
 				DelayLoadDLLs="$(NOINHERIT)"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/FestivalEditor.pdb"
@@ -98,7 +98,7 @@
 			/>
 			<DeploymentTool
 				ForceDirty="-1"
-				RemoteDirectory=""
+				RemoteDirectory="%CSIDL_PROGRAM_FILES%\M8Calendar"
 				RegisterOutput="0"
 				AdditionalFiles=""
 			/>

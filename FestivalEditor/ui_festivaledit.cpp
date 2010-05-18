@@ -445,7 +445,7 @@ void Ui_FestivalEdit::UpdateDetail(){
 				lstm.GetSunSign(s1.month,s1.day,sunsign);
 				wsprintf(dstr,L"公历:%04d-%02d-%02d %s %s",
 					s1.year,s1.month,s1.day,
-					lstm.Zodiac().C_Str(),
+					lstm.Zodiac(),
 					sunsign);
 
 				m_plblDetail->SetText(dstr);
@@ -463,7 +463,7 @@ void Ui_FestivalEdit::UpdateDetail(){
 				lstm.GetSunSign(s1.month,s1.day,sunsign);
 				wsprintf(dstr,L"农历:%04d-%02d-%02d %s %s",
 					s2.year,s2.month,s2.day,
-					lstm.Zodiac().C_Str(),
+					lstm.Zodiac(),
 					sunsign);
 
 				m_plblDetail->SetText(dstr);

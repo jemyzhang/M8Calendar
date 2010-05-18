@@ -287,7 +287,74 @@ private:
     int _day2;
     int _day;
 };
+///////////////////////////////////////////////////
+class UiYijiInfo : public UiStatic
+{
+public:
+	UiYijiInfo(){
+		_isTs = false;
+	}
+	~UiYijiInfo(){
+	}
+	virtual void PaintWin(HDC hdcDst, RECT* prcWin, RECT* prcUpdate){
+		UiStatic::PaintWin(hdcDst,prcWin,prcUpdate);
+		SetBkMode(hdcDst,TRANSPARENT);
 
+		HFONT hf = FontHelper::GetFont( 25 );
+		HFONT oldfont = (HFONT)SelectObject( hdcDst , hf );
+
+		RECT rect;
+
+		if(_isTs){
+			rect.top = prcWin->top;
+			rect.bottom = prcWin->bottom;
+			rect.left = prcWin->left;
+			rect.right = prcWin->right;
+			::SetTextColor( hdcDst, RGB(255,64,255));
+			MzDrawText( hdcDst, tsText, &rect, DT_CENTER|DT_SINGLELINE|DT_VCENTER|DT_END_ELLIPSIS );
+		}else{
+            int height = prcWin->bottom - prcWin->top - 20;
+            int width = prcWin->right - prcWin->left;
+            rect.left = prcWin->left;
+            rect.right = rect.left + width/2;
+            //宜
+            rect.top = prcWin->top;
+            rect.bottom = prcWin->bottom;
+            ::SetTextColor( hdcDst,RGB(64,255,128));
+            MzDrawText( hdcDst, L"宜", &rect, DT_LEFT|DT_SINGLELINE|DT_VCENTER|DT_END_ELLIPSIS );
+            //忌
+            rect.left = rect.right;
+            rect.right = prcWin->right;
+            ::SetTextColor( hdcDst, RGB(255,64,64));
+            MzDrawText( hdcDst, L"忌", &rect, DT_LEFT|DT_SINGLELINE|DT_VCENTER|DT_END_ELLIPSIS );
+
+            hf = FontHelper::GetFont( 18 );
+            oldfont = (HFONT)SelectObject( hdcDst , hf );
+            ::SetTextColor( hdcDst, RGB(0,0,0));
+
+            rect.left = prcWin->left + 25;
+            rect.right = prcWin->left + width/2;
+            MzDrawText( hdcDst, yiText, &rect, DT_LEFT|DT_SINGLELINE|DT_VCENTER|DT_END_ELLIPSIS );
+
+            rect.left = rect.right + 25;
+            rect.right = prcWin->right;
+            MzDrawText( hdcDst, jiText, &rect, DT_LEFT|DT_SINGLELINE|DT_VCENTER|DT_END_ELLIPSIS );
+		}
+        SelectObject(hdcDst,oldfont);//恢复系统字体
+	}
+	void setText(LPCTSTR yi, LPCTSTR ji,bool ts = false){
+		_isTs = ts;
+		if(!ts){
+			yiText = yi;
+			jiText = ji;
+		}else{
+			tsText = yi;
+		}
+	}
+private:
+	LPCTSTR yiText,jiText,tsText;
+	bool _isTs;	//特殊
+};
 ///////////////////////////////////////////////////
 MZ_IMPLEMENT_DYNAMIC(Ui_TodayWnd)
 
@@ -320,12 +387,14 @@ Ui_TodayWnd::Ui_TodayWnd(void)
     DateTime::getDate(&_year,&_month,&_day);
     INIT_PTR(m_pBigDay);
     INIT_PTR(m_pFestDetail);
+    INIT_PTR(m_pYiji);
 }
 
 Ui_TodayWnd::~Ui_TodayWnd(void)
 {
     DEL_PTR(m_pBigDay);
     DEL_PTR(m_pFestDetail);
+    DEL_PTR(m_pYiji);
 }
 
 BOOL Ui_TodayWnd::OnInitDialog() {
@@ -431,11 +500,15 @@ BOOL Ui_TodayWnd::OnInitDialog() {
 
     y+= LINEHEIGHT + 10;
 	m_pFestDetail = new UiFestivalInfo;
-    m_pFestDetail->SetPos(0,y,GetWidth(),GetHeight() - MZM_HEIGHT_TOOLBARPRO - y);
+    m_pFestDetail->SetPos(0,y,GetWidth(),GetHeight() - MZM_HEIGHT_TOOLBARPRO - y - 25);
 	m_pFestDetail->SetTextSize(24);
     m_pFestDetail->SetTextWeight(FW_BOLD);
 	m_pFestDetail->SetID(MZ_IDC_FEST_INFO);
 	AddUiWin(m_pFestDetail);
+
+	m_pYiji = new UiYijiInfo;
+    m_pYiji->SetPos(0,GetHeight() - MZM_HEIGHT_TOOLBARPRO - 25,GetWidth(), 25);
+	AddUiWin(m_pYiji);
 
     //width = GetWidth() - 40;
     //m_Yi.SetPos(20,y,width,40);
@@ -486,13 +559,13 @@ void Ui_TodayWnd::updateUi(){
     _lstm.SolarToLunar();
 
     wsprintf(wstmp,L"%s(%s)年",
-        _lstm.GanZhiYear().C_Str(),
-        _lstm.Zodiac().C_Str());
+        _lstm.GanZhiYear(),
+        _lstm.Zodiac());
     m_GanZhiYear.SetText(wstmp);
 
     wsprintf(wstmp,L"%s%s",
-        _lstm.LunarMonth().C_Str(),
-        _lstm.OriginalLunarDay().C_Str());
+        _lstm.LunarMonth(),
+        _lstm.OriginalLunarDay());
     m_LunarMonthDay.SetText(wstmp);
 
     wchar_t holidayname[20];
@@ -529,11 +602,13 @@ void Ui_TodayWnd::updateUi(){
     m_Jieqi.SetText(wstmp);
 
 
-    wsprintf(wstmp,L"%s月 %s日",_lstm.GanZhiMonth().C_Str(),_lstm.GanZhiDay().C_Str());
+    wsprintf(wstmp,L"%s月 %s日",_lstm.GanZhiMonth(),_lstm.GanZhiDay());
     m_GanZhiMonth.SetText(wstmp);
 
-    //CMzString yi,ji;
-    //bool ret = _lstm.HuangliYiJi(yi,ji);
+    LPCTSTR yi,ji;
+    bool ret = _lstm.HuangliYiJi(yi,ji);
+    m_pYiji->setText(yi,ji,ret);
+    m_pYiji->Invalidate();
 
     //if(ret){
     //    wsprintf(wstmp,L"%s",yi.C_Str());

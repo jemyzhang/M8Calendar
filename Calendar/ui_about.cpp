@@ -3,8 +3,8 @@
 MZ_IMPLEMENT_DYNAMIC(UI_AboutWnd)
 
 #define MZ_IDC_TOOLBAR_ABOUT 101
-#define VER_STRING L"1.94"
-#define BUILD_STRING L"20100513.062"
+#define VER_STRING L"1.95"
+#define BUILD_STRING L"20100518.063"
 #define APPNAME L"’∆…œ≈©¿˙"
 
 

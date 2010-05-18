@@ -26,12 +26,14 @@ public:
         m_pButtonBar0 = 0;
         m_pButtonBar1 = 0;
         m_ptoolBar = 0;
+        pItemColl = 0;
     }
     ~FestivalEditorWnd(){
         if(m_plist) delete m_plist;
         if(m_pButtonBar0) delete m_pButtonBar0;
         if(m_pButtonBar1) delete m_pButtonBar1;
         if(m_ptoolBar) delete m_ptoolBar;
+        if(pItemColl) delete pItemColl;
     }
 public:
     UiFestivalList *m_plist;

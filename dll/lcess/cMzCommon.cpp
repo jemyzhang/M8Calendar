@@ -148,7 +148,7 @@ void cMzCommonC::newlinecpy(wchar_t** pdst, const wchar_t* src, size_t nsize){
 }
 
 void cMzCommonC::newstrcpy(wchar_t** pdst,const wchar_t* src, size_t nsize){
-	if(*pdst) delete *pdst;
+	if(*pdst) delete [] (*pdst);
 	wchar_t* newdst;
 	if(nsize == 0){
 		newdst = new wchar_t[lstrlen(src) + 1];
@@ -263,7 +263,7 @@ TEXTENCODE_t cMzCommonFile::getTextCode(TCHAR* filename)
 		fstream openfile;
         openfile.open(filename, ios::in | ios::binary);
         openfile.seekg(0, ios::beg);
-        char *code = new char[2];
+        char code[2];
         openfile.read(code, 2);
         openfile.close();
         

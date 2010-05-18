@@ -864,8 +864,8 @@ void UiWidget_Calendar::updateUi(){
 
     if(m_pGanZhiYear->isShow()){
         wsprintf(wstmp,L"%s(%s)年",
-            _lstm.GanZhiYear().C_Str(),
-            _lstm.Zodiac(&zodiacidx).C_Str());
+            _lstm.GanZhiYear(),
+            _lstm.Zodiac(&zodiacidx));
         m_pGanZhiYear->SetText(wstmp);
     }
 
@@ -875,8 +875,8 @@ void UiWidget_Calendar::updateUi(){
 
     if(m_pLunarMonthDay->isShow()){
         wsprintf(wstmp,L"%s%s",
-            _lstm.LunarMonth().C_Str(),
-            _lstm.OriginalLunarDay().C_Str());
+            _lstm.LunarMonth(),
+            _lstm.OriginalLunarDay());
         m_pLunarMonthDay->SetText(wstmp);
     }
 
@@ -936,7 +936,7 @@ void UiWidget_Calendar::updateUi(){
 
 
     if(m_pGanZhiMonth->isShow()){
-        wsprintf(wstmp,L"%s月 %s日",_lstm.GanZhiMonth().C_Str(),_lstm.GanZhiDay().C_Str());
+        wsprintf(wstmp,L"%s月 %s日",_lstm.GanZhiMonth(),_lstm.GanZhiDay());
         m_pGanZhiMonth->SetText(wstmp);
     }
 

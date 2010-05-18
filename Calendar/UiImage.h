@@ -1,7 +1,6 @@
 #pragma once
 // include the MZFC library header file
 #include <mzfc_inc.h>
-
 class UiImage : public UiWin
 {
 public:
@@ -10,6 +9,7 @@ public:
         pimgPath = 0;
 	}
 	~UiImage(void){
+        if(pimgPath) delete [] pimgPath;
 	}
 	void setupImage(ImagingHelper* img) {
         if(img){

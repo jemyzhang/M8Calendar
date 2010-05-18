@@ -26,8 +26,8 @@ cMzConfig::~cMzConfig(){
         	IniWriteInt((TCHAR *)_mainKey,(TCHAR *)_subKey,_value,gs_inifile);
         }
     }
-    if(_valueStr) delete _valueStr;
-    if(_defaultValueStr) delete _defaultValueStr;
+    if(_valueStr) delete [] _valueStr;
+    if(_defaultValueStr) delete [] _defaultValueStr;
 }
 
 void cMzConfig::InitKey(LPCTSTR mainKey, LPCTSTR subKey, DWORD defaultVal){
